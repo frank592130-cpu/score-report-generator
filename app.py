@@ -175,18 +175,36 @@ def inject_css(dark: bool):
     .stTextInput input,
     .stNumberInput input {{
         background: {input_bg} !important;
-        border: 1.5px solid {border_col} !important;
+        border: none !important;
         border-radius: 11px !important;
         color: {text} !important;
         font-family: 'Noto Sans TC', sans-serif !important;
         font-size: 0.92rem !important;
         padding: 0.6rem 0.9rem !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }}
+    /* BaseWeb 容器邊框（產生黑線的元兇）*/
+    .stTextInput [data-baseweb="input"],
+    .stNumberInput [data-baseweb="input"],
+    .stTextInput [data-baseweb="base-input"],
+    .stNumberInput [data-baseweb="base-input"] {{
+        background: {input_bg} !important;
+        border: 1.5px solid {border_col} !important;
+        border-radius: 11px !important;
+        outline: none !important;
+        box-shadow: none !important;
         transition: border-color 0.25s, box-shadow 0.25s !important;
     }}
+    /* focus 狀態 — 覆蓋掉紅線 */
+    .stTextInput [data-baseweb="input"]:focus-within,
+    .stNumberInput [data-baseweb="input"]:focus-within,
+    .stTextInput [data-baseweb="base-input"]:focus-within,
+    .stNumberInput [data-baseweb="base-input"]:focus-within,
     .stTextInput input:focus,
     .stNumberInput input:focus {{
         border-color: {accent_a} !important;
-        box-shadow: 0 0 0 3px {accent_glow}, 0 0 0 6px {accent_glow2} !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
         outline: none !important;
     }}
     .stTextInput label,
@@ -204,11 +222,20 @@ def inject_css(dark: bool):
         color: {accent_a} !important;
         border: 1.5px solid {border_col} !important;
         border-radius: 8px !important;
+        outline: none !important;
+        box-shadow: none !important;
     }}
     .stNumberInput [data-testid="stNumberInputStepDown"]:hover,
     .stNumberInput [data-testid="stNumberInputStepUp"]:hover,
     .stNumberInput button:hover {{
         background: {btn_hover} !important;
+        border-color: {accent_a} !important;
+    }}
+    .stNumberInput [data-testid="stNumberInputStepDown"]:focus,
+    .stNumberInput [data-testid="stNumberInputStepUp"]:focus,
+    .stNumberInput button:focus {{
+        outline: none !important;
+        box-shadow: none !important;
         border-color: {accent_a} !important;
     }}
 
