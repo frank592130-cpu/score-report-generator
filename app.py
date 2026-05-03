@@ -5,9 +5,9 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-st.set_page_config(page_title="成績報表產生器", page_icon="📊", layout="centered")
+st.set_page_config(page_title="成績單產生器", page_icon="📊", layout="centered")
 
-st.title("📊 成績報表產生器")
+st.title("📊 成績單產生器")
 st.caption("上傳成績 Excel，自動排名並輸出格式化報表")
 
 # ════════════════════════════════
