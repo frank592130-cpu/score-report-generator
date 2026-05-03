@@ -192,10 +192,10 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
 with st.expander("⚙️ 考試設定", expanded=True):
     exam_name = st.text_input("考試名稱（以空格分三段）", placeholder="國三 金安模擬考 第六回")
     c1, c2, c3, c4 = st.columns(4)
-    th_app = c1.number_input("A++ ≥", value=95.0, step=0.1)
-    th_ap  = c2.number_input("A+  ≥", value=90.0, step=0.1)
-    th_a   = c3.number_input("A   ≥", value=80.0, step=0.1)
-    th_bpp = c4.number_input("B++ ≥", value=70.0, step=0.1)
+    th_app = c1.number_input("A++ ≥", value=93.2, step=0.1)
+    th_ap  = c2.number_input("A+  ≥", value=85.7, step=0.1)
+    th_a   = c3.number_input("A   ≥", value=76.2, step=0.1)
+    th_bpp = c4.number_input("B++ ≥", value=67.1, step=0.1)
 
 st.markdown("---")
 uploaded = st.file_uploader("📂 上傳成績檔案（xlsx）", type=["xlsx", "xls"])
