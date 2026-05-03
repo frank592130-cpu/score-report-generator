@@ -11,7 +11,7 @@ st.title("📊 成績報表產生器")
 st.caption("上傳成績 Excel，自動排名並輸出格式化報表")
 
 # ════════════════════════════════
-#  樣式輔助 (保留原始樣式)
+#  樣式輔助
 # ════════════════════════════════
 FONT_NAME = "新細明體"
 FILLS = {
@@ -62,13 +62,12 @@ def read_students(uploaded):
     return students
 
 # ════════════════════════════════
-#  建立報表 (核心改進：矩形化與平均值銜接)
+#  建立報表
 # ════════════════════════════════
 def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
     sorted_s = sorted(students, key=lambda x: -x[3])
     n = len(sorted_s)
 
-    # 1. 計算平均值
     avg_sel    = round(sum(s  for _, s,  _, _ in sorted_s) / n, 2)
     avg_nonsel = round(sum(ns for _, _, ns, _ in sorted_s) / n, 2)
     avg_total  = round(sum(t  for _, _, _,  t in sorted_s) / n, 2)
@@ -78,35 +77,31 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
         g = get_grade(t, th_app, th_ap, th_a, th_bpp)
         if g in counts: counts[g] += 1
 
-    # 2. 計算矩形行數 (將平均視為一筆資料)
+    # 計算矩形行數 (學生數 + 平均，平分三欄)
     total_slots = n + 1 
     rows_per_block = math.ceil(total_slots / 3)
-    if rows_per_block < 2: rows_per_block = 2 # 確保平均有足夠空間顯示
+    if rows_per_block < 2: rows_per_block = 2
     
     HEADER_ROW = 1
     DATA_START = 2
-    TOTAL_DATA_ROWS = rows_per_block
-    FINAL_ROW = DATA_START + TOTAL_DATA_ROWS - 1
+    FINAL_ROW = DATA_START + rows_per_block - 1
 
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "成績報表"
 
-    # 設定欄寬與行高 (加寬平均值可能所在的欄位)
+    # 設定基本欄寬
     for b in range(3):
         base = b * 4 + 1
         ws.column_dimensions[get_column_letter(base)].width   = 9
-        ws.column_dimensions[get_column_letter(base+1)].width = 7 # 稍微加寬以容納小數兩位
-        ws.column_dimensions[get_column_letter(base+2)].width = 7
-        ws.column_dimensions[get_column_letter(base+3)].width = 7
+        ws.column_dimensions[get_column_letter(base+1)].width = 7.5
+        ws.column_dimensions[get_column_letter(base+2)].width = 7.5
+        ws.column_dimensions[get_column_letter(base+3)].width = 7.5
     
-    ws.column_dimensions["M"].width = 0.5
+    ws.column_dimensions["M"].width = 0.4
     ws.column_dimensions["N"].width = 7
     ws.column_dimensions["O"].width = 7
     ws.column_dimensions["P"].width = 7
-
-    for r in range(1, FINAL_ROW + 1):
-        ws.row_dimensions[r].height = 16
 
     # 填入標頭
     for b in range(3):
@@ -114,7 +109,7 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
         for i, h in enumerate(["姓名", "選擇", "非選", "總分"]):
             sc(ws, HEADER_ROW, base + i, h, border=all_thin())
 
-    # 3. 填入學生資料
+    # 填入學生
     for idx, (name, sel, nonsel, total) in enumerate(sorted_s):
         b = idx // rows_per_block
         r = DATA_START + (idx % rows_per_block)
@@ -126,28 +121,28 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
         sc(ws, r, col + 2, nonsel, fill=f, border=all_thin())
         sc(ws, r, col + 3, total,  fill=f, border=all_thin())
 
-    # 4. 填入平均值並合併 (緊跟在最後一名學生後)
+    # 處理平均值 (修正框線遺失問題)
     avg_pos = n
     b_avg = avg_pos // rows_per_block
     r_avg_start = DATA_START + (avg_pos % rows_per_block)
     r_avg_end = FINAL_ROW
     col_avg = b_avg * 4 + 1
+    avg_vals = ["平均", avg_sel, avg_nonsel, avg_total]
 
-    # 平均標題合併
-    ws.merge_cells(start_row=r_avg_start, start_column=col_avg, end_row=r_avg_end, end_column=col_avg)
-    c_avg = sc(ws, r_avg_start, col_avg, "平均", bold=True, size=12, border=all_thin())
-    
-    # 平均數值合併
-    avg_vals = [avg_sel, avg_nonsel, avg_total]
     for i, val in enumerate(avg_vals):
-        curr_col = col_avg + 1 + i
-        ws.merge_cells(start_row=r_avg_start, start_column=curr_col, end_row=r_avg_end, end_column=curr_col)
-        # 如果數值寬度不足，自動微調 (openpyxl 需手動指定寬度)
-        if len(str(val)) > 5:
-            ws.column_dimensions[get_column_letter(curr_col)].width = 9
+        curr_col = col_avg + i
+        # 重點：在合併前，先對該範圍內所有儲存格畫線
+        for fill_r in range(r_avg_start, r_avg_end + 1):
+            sc(ws, fill_r, curr_col, "", border=all_thin())
+        
+        # 執行合併
+        if r_avg_end > r_avg_start:
+            ws.merge_cells(start_row=r_avg_start, start_column=curr_col, end_row=r_avg_end, end_column=curr_col)
+        
+        # 填入數值與設定樣式
         sc(ws, r_avg_start, curr_col, val, bold=True, size=12, border=all_thin())
 
-    # 5. 補齊剩餘空格 (確保矩形邊框完整)
+    # 補齊所有空格的邊框 (確保完美矩形)
     for b in range(3):
         base = b * 4 + 1
         for r in range(DATA_START, FINAL_ROW + 1):
@@ -155,9 +150,8 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
                 for i in range(4):
                     sc(ws, r, base + i, "", border=all_thin())
 
-    # 6. 右側標題與統計 (保留原始邏輯)
-    TITLE_R1, TITLE_R2 = 2, 7
-    TITLE_C1, TITLE_C2 = 14, 16
+    # 右側統計資訊
+    TITLE_R1, TITLE_R2, TITLE_C1, TITLE_C2 = 2, 7, 14, 16
     ws.merge_cells(start_row=TITLE_R1, start_column=TITLE_C1, end_row=TITLE_R2, end_column=TITLE_C2)
     tc = ws.cell(row=TITLE_R1, column=TITLE_C1)
     tc.value = "\n".join(exam_lines)
@@ -169,16 +163,14 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
 
     visible = [(g, counts[g]) for g in ["A++", "A+", "A", "B++"] if counts[g] > 0]
     GRADE_R1 = TITLE_R2 + 2
-    GRADE_R2 = GRADE_R1 + len(visible) - 1
-    GRADE_C1, GRADE_C2 = 14, 15
     for i, (g, cnt) in enumerate(visible):
         row = GRADE_R1 + i
         f = FILLS[g]
-        for col, val in [(GRADE_C1, g), (GRADE_C2, cnt)]:
+        for col, val in [(14, g), (15, cnt)]:
             cell = ws.cell(row=row, column=col, value=val)
             cell.font = Font(name=FONT_NAME, bold=True, size=11)
             cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.border = outer_med(row, col, GRADE_R1, GRADE_C1, GRADE_R2, GRADE_C2)
+            cell.border = outer_med(row, col, GRADE_R1, 14, GRADE_R1 + len(visible) - 1, 15)
             if f: cell.fill = f
 
     buf = io.BytesIO()
@@ -187,7 +179,7 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
     return buf, counts, avg_sel, avg_nonsel, avg_total, n
 
 # ════════════════════════════════
-#  UI 介面 (完全保留原始功能)
+#  UI 介面 (保留所有原始功能)
 # ════════════════════════════════
 with st.expander("⚙️ 考試設定", expanded=True):
     exam_name = st.text_input("考試名稱（以空格分三段）", placeholder="國三 金安模擬考 第六回")
@@ -204,7 +196,6 @@ if uploaded:
     try:
         students = read_students(uploaded)
         st.success(f"✅ 成功讀取 {len(students)} 位學生")
-
         if st.button("🚀 產生報表", type="primary", use_container_width=True):
             if not exam_name.strip():
                 st.error("請填入考試名稱")
@@ -214,29 +205,13 @@ if uploaded:
                 elif len(parts) == 2: lines = [parts[0], "", parts[1]]
                 else:                 lines = ["", exam_name.strip(), ""]
 
-                with st.spinner("產生中…"):
-                    buf, counts, avg_sel, avg_nonsel, avg_total, n = build_report(
-                        students, lines, th_app, th_ap, th_a, th_bpp)
+                buf, counts, avg_sel, avg_nonsel, avg_total, n = build_report(students, lines, th_app, th_ap, th_a, th_bpp)
+                st.download_button("⬇️ 下載 Excel 報表", data=buf, file_name=f"{exam_name}.xlsx", use_container_width=True, type="primary")
 
-                fname = exam_name.replace(" ", "") + "_成績報表.xlsx"
-                st.download_button(
-                    label="⬇️ 下載 Excel 報表",
-                    data=buf,
-                    file_name=fname,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True,
-                    type="primary",
-                )
-
-                # 摘要顯示
                 st.markdown("**報表摘要**")
                 cols = st.columns(4)
                 for col, (g, bg) in zip(cols, [("A++","#dceeff"),("A+","#e6e6e6"),("A","#bfbfbf"),("B++","#aaaaaa")]):
-                    col.markdown(
-                        f'<div style="background:{bg};border-radius:8px;padding:10px;text-align:center">'
-                        f'<div style="font-size:12px;font-weight:600">{g}</div>'
-                        f'<div style="font-size:24px;font-weight:700">{counts[g]}</div></div>',
-                        unsafe_allow_html=True)
+                    col.markdown(f'<div style="background:{bg};border-radius:8px;padding:10px;text-align:center"><div style="font-size:12px;font-weight:600">{g}</div><div style="font-size:24px;font-weight:700">{counts[g]}</div></div>', unsafe_allow_html=True)
                 st.markdown(f"平均　選擇 **{avg_sel}**　非選 **{avg_nonsel}**　總分 **{avg_total}**　共 **{n}** 人")
     except Exception as e:
-        st.error(f"執行出錯：{e}")
+        st.error(f"錯誤：{e}")
