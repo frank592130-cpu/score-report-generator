@@ -18,11 +18,15 @@ if "dark_mode" not in st.session_state:
 # ════════════════════════════════
 def inject_css(dark: bool):
     if dark:
-        # 深色漸層：深藍宇宙感
-        page_bg     = "linear-gradient(145deg, #0a0e1a 0%, #0f1525 40%, #0d1a2e 70%, #0a1020 100%)"
-        surface     = "rgba(20,26,46,0.85)"
-        surface2    = "rgba(26,32,58,0.7)"
-        border_col  = "rgba(79,142,247,0.18)"
+        page_bg     = (
+            "radial-gradient(ellipse 60% 50% at 15% 20%, rgba(79,142,247,0.13) 0%, transparent 70%),"
+            "radial-gradient(ellipse 50% 45% at 85% 75%, rgba(167,139,250,0.11) 0%, transparent 70%),"
+            "radial-gradient(ellipse 40% 35% at 50% 50%, rgba(56,189,248,0.06) 0%, transparent 60%),"
+            "linear-gradient(145deg, #0a0e1a 0%, #0f1525 40%, #0d1a2e 70%, #0a1020 100%)"
+        )
+        surface     = "#151c30"
+        surface2    = "#1a2240"
+        border_col  = "rgba(79,142,247,0.22)"
         text        = "#dce8ff"
         text_sub    = "#7a8fb8"
         accent_a    = "#4f8ef7"
@@ -32,40 +36,31 @@ def inject_css(dark: bool):
         accent_glow2= "rgba(167,139,250,0.18)"
         btn_bg      = "rgba(79,142,247,0.10)"
         btn_hover   = "rgba(79,142,247,0.20)"
-        input_bg    = "rgba(15,21,37,0.9)"
+        input_bg    = "#0f1525"
         success_bg  = "rgba(52,211,153,0.10)"
         success_col = "#34d399"
         err_bg      = "rgba(248,113,113,0.10)"
         err_col     = "#f87171"
         toggle_icon = "☀️"
         toggle_tip  = "切換為淺色模式"
-        shadow_card = "0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)"
+        shadow_card = "0 8px 40px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.04)"
         shadow_btn  = "0 4px 20px rgba(79,142,247,0.35)"
         divider_grad= "linear-gradient(90deg, transparent, rgba(79,142,247,0.4), rgba(167,139,250,0.4), transparent)"
-        # header title gradient
         title_grad  = "linear-gradient(135deg, #7cb8ff 0%, #c4b5fd 60%, #93c5fd 100%)"
-        # expander header bg gradient
-        exp_hdr     = "linear-gradient(135deg, rgba(20,28,55,0.95) 0%, rgba(18,25,50,0.95) 100%)"
-        exp_body    = "rgba(14,20,40,0.7)"
-        # upload zone
-        upload_bg   = "rgba(16,22,42,0.6)"
+        exp_hdr     = "#131a30"
+        exp_body    = "#0f1525"
+        upload_bg   = "#131a30"
         upload_hover= "rgba(79,142,247,0.08)"
-        # orb glows for bg
-        orb_css = """
-        .stApp::before {
-            content: '';
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background:
-                radial-gradient(ellipse 60% 50% at 15% 20%, rgba(79,142,247,0.12) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 45% at 85% 75%, rgba(167,139,250,0.10) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 35% at 50% 50%, rgba(56,189,248,0.05) 0%, transparent 60%);
-        }"""
     else:
-        # 淺色漸層：清透藍紫珍珠感
-        page_bg     = "linear-gradient(150deg, #eef4ff 0%, #f5f0ff 35%, #e8f4fd 65%, #f0f8ff 100%)"
-        surface     = "rgba(255,255,255,0.85)"
-        surface2    = "rgba(240,245,255,0.80)"
-        border_col  = "rgba(99,128,220,0.18)"
+        page_bg     = (
+            "radial-gradient(ellipse 55% 45% at 10% 15%, rgba(59,110,240,0.10) 0%, transparent 65%),"
+            "radial-gradient(ellipse 50% 40% at 90% 80%, rgba(124,58,237,0.09) 0%, transparent 65%),"
+            "radial-gradient(ellipse 35% 30% at 55% 45%, rgba(14,165,233,0.07) 0%, transparent 55%),"
+            "linear-gradient(150deg, #eef4ff 0%, #f5f0ff 35%, #e8f4fd 65%, #f0f8ff 100%)"
+        )
+        surface     = "#ffffff"
+        surface2    = "#f0f5ff"
+        border_col  = "rgba(99,128,220,0.22)"
         text        = "#1a1f3c"
         text_sub    = "#5a6490"
         accent_a    = "#3b6ef0"
@@ -75,30 +70,21 @@ def inject_css(dark: bool):
         accent_glow2= "rgba(124,58,237,0.12)"
         btn_bg      = "rgba(59,110,240,0.07)"
         btn_hover   = "rgba(59,110,240,0.14)"
-        input_bg    = "rgba(248,251,255,0.95)"
+        input_bg    = "#f8fbff"
         success_bg  = "rgba(16,185,129,0.08)"
         success_col = "#059669"
         err_bg      = "rgba(220,38,38,0.07)"
         err_col     = "#dc2626"
         toggle_icon = "🌙"
         toggle_tip  = "切換為深色模式"
-        shadow_card = "0 4px 32px rgba(59,110,240,0.10), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)"
+        shadow_card = "0 4px 32px rgba(59,110,240,0.10), 0 1px 4px rgba(0,0,0,0.04)"
         shadow_btn  = "0 4px 16px rgba(59,110,240,0.28)"
         divider_grad= "linear-gradient(90deg, transparent, rgba(59,110,240,0.3), rgba(124,58,237,0.3), transparent)"
         title_grad  = "linear-gradient(135deg, #2563eb 0%, #7c3aed 60%, #0ea5e9 100%)"
-        exp_hdr     = "linear-gradient(135deg, rgba(245,248,255,0.97) 0%, rgba(240,244,255,0.97) 100%)"
-        exp_body    = "rgba(253,254,255,0.92)"
-        upload_bg   = "rgba(241,246,255,0.8)"
+        exp_hdr     = "#f0f5ff"
+        exp_body    = "#fafcff"
+        upload_bg   = "#f0f5ff"
         upload_hover= "rgba(59,110,240,0.06)"
-        orb_css = """
-        .stApp::before {
-            content: '';
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background:
-                radial-gradient(ellipse 55% 45% at 10% 15%, rgba(59,110,240,0.09) 0%, transparent 65%),
-                radial-gradient(ellipse 50% 40% at 90% 80%, rgba(124,58,237,0.08) 0%, transparent 65%),
-                radial-gradient(ellipse 35% 30% at 55% 45%, rgba(14,165,233,0.06) 0%, transparent 55%);
-        }"""
 
     css = f"""
     <style>
@@ -111,14 +97,11 @@ def inject_css(dark: bool):
         background-attachment: fixed !important;
         color: {text} !important;
         font-family: 'Noto Sans TC', sans-serif !important;
-        position: relative;
     }}
-    {orb_css}
     .block-container {{
         padding-top: 2.2rem !important;
         padding-bottom: 3.5rem !important;
         max-width: 780px !important;
-        position: relative; z-index: 1;
     }}
     * {{ box-sizing: border-box; }}
 
@@ -164,11 +147,9 @@ def inject_css(dark: bool):
         border: none;
     }}
 
-    /* ── Expander（毛玻璃卡片）── */
+    /* ── Expander（卡片）── */
     [data-testid="stExpander"] {{
         background: {surface} !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
         border: 1px solid {border_col} !important;
         border-radius: 18px !important;
         box-shadow: {shadow_card} !important;
@@ -183,7 +164,7 @@ def inject_css(dark: bool):
         letter-spacing: 0.01em !important;
     }}
     [data-testid="stExpander"] summary:hover {{
-        background: {btn_hover} !important;
+        filter: brightness(0.97) !important;
     }}
     [data-testid="stExpander"] > div > div {{
         padding: 1.3rem 1.4rem 1.5rem !important;
@@ -201,7 +182,6 @@ def inject_css(dark: bool):
         font-size: 0.92rem !important;
         padding: 0.6rem 0.9rem !important;
         transition: border-color 0.25s, box-shadow 0.25s !important;
-        backdrop-filter: blur(4px) !important;
     }}
     .stTextInput input:focus,
     .stNumberInput input:focus {{
@@ -228,7 +208,6 @@ def inject_css(dark: bool):
         font-size: 0.9rem !important;
         padding: 0.55rem 1.5rem !important;
         transition: all 0.22s !important;
-        backdrop-filter: blur(4px) !important;
     }}
     .stButton > button:hover {{
         background: {btn_hover} !important;
@@ -271,7 +250,6 @@ def inject_css(dark: bool):
     /* ── 上傳區 ── */
     [data-testid="stFileUploaderDropzone"] {{
         background: {upload_bg} !important;
-        backdrop-filter: blur(8px) !important;
         border: 2px dashed {border_col} !important;
         border-radius: 16px !important;
         padding: 2.2rem !important;
@@ -291,7 +269,6 @@ def inject_css(dark: bool):
         border-radius: 12px !important;
         border: none !important;
         font-size: 0.88rem !important;
-        backdrop-filter: blur(6px) !important;
     }}
     .stSuccess {{
         background: {success_bg} !important;
@@ -314,16 +291,7 @@ def inject_css(dark: bool):
         padding: 1rem 0.6rem;
         text-align: center;
         border: 1px solid {border_col};
-        backdrop-filter: blur(8px);
         transition: transform 0.18s, box-shadow 0.18s;
-        position: relative; overflow: hidden;
-    }}
-    .metric-tile::before {{
-        content: '';
-        position: absolute; inset: 0;
-        background: inherit;
-        filter: blur(0);
-        z-index: -1;
     }}
     .metric-tile:hover {{
         transform: translateY(-3px);
@@ -342,30 +310,16 @@ def inject_css(dark: bool):
         line-height: 1;
     }}
 
-    /* ── 平均列（漸層邊框）── */
+    /* ── 平均列 ── */
     .avg-row {{
         display: flex; gap: 1.5rem; flex-wrap: wrap;
         background: {surface2};
-        backdrop-filter: blur(8px);
         border: 1px solid {border_col};
         border-radius: 13px;
         padding: 0.9rem 1.3rem;
         margin-top: 0.8rem;
         font-size: 0.88rem;
         color: {text_sub};
-        position: relative;
-    }}
-    .avg-row::before {{
-        content: '';
-        position: absolute; inset: 0;
-        border-radius: 13px;
-        padding: 1px;
-        background: {accent_grad};
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        opacity: 0.4;
-        pointer-events: none;
     }}
     .avg-row strong {{
         background: {accent_grad};
@@ -387,7 +341,6 @@ def inject_css(dark: bool):
         color: {accent_a};
         border: 1px solid {border_col};
         font-family: 'DM Mono', monospace;
-        backdrop-filter: blur(4px);
     }}
 
     /* ── Section label（漸層）── */
