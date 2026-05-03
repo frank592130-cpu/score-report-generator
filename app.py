@@ -196,6 +196,21 @@ def inject_css(dark: bool):
         font-weight: 600 !important;
         letter-spacing: 0.04em !important;
     }}
+    /* NumberInput +/- 按鈕 */
+    .stNumberInput [data-testid="stNumberInputStepDown"],
+    .stNumberInput [data-testid="stNumberInputStepUp"],
+    .stNumberInput button {{
+        background: {btn_bg} !important;
+        color: {accent_a} !important;
+        border: 1.5px solid {border_col} !important;
+        border-radius: 8px !important;
+    }}
+    .stNumberInput [data-testid="stNumberInputStepDown"]:hover,
+    .stNumberInput [data-testid="stNumberInputStepUp"]:hover,
+    .stNumberInput button:hover {{
+        background: {btn_hover} !important;
+        border-color: {accent_a} !important;
+    }}
 
     /* ── 一般按鈕 ── */
     .stButton > button {{
@@ -262,6 +277,14 @@ def inject_css(dark: bool):
     }}
     [data-testid="stFileUploaderDropzone"] * {{
         color: {text_sub} !important;
+    }}
+    /* 上傳按鈕本身 */
+    [data-testid="stFileUploaderDropzone"] button,
+    [data-testid="stFileUploaderDropzoneInstructions"] + div button {{
+        background: {btn_bg} !important;
+        color: {accent_a} !important;
+        border: 1.5px solid {border_col} !important;
+        border-radius: 9px !important;
     }}
 
     /* ── Alert ── */
@@ -564,17 +587,6 @@ with st.expander("⚙️　考試設定", expanded=True):
     th_ap  = c2.number_input("A+  門檻", value=85.7, step=0.1, format="%.1f")
     th_a   = c3.number_input("A   門檻", value=76.2, step=0.1, format="%.1f")
     th_bpp = c4.number_input("B++ 門檻", value=67.1, step=0.1, format="%.1f")
-
-    # 視覺化門檻預覽標籤
-    st.markdown(
-        f'<div class="threshold-row">'
-        f'<span class="threshold-badge">A++ ≥ {th_app}</span>'
-        f'<span class="threshold-badge">A+ ≥ {th_ap}</span>'
-        f'<span class="threshold-badge">A ≥ {th_a}</span>'
-        f'<span class="threshold-badge">B++ ≥ {th_bpp}</span>'
-        f'</div>',
-        unsafe_allow_html=True
-    )
 
 st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
