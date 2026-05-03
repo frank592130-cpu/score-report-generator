@@ -77,11 +77,17 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
         g = get_grade(t, th_app, th_ap, th_a, th_bpp)
         if g in counts: counts[g] += 1
 
-    # 計算矩形行數 (學生數 + 平均，平分三欄)
-    total_slots = n + 1 
-    rows_per_block = math.ceil(total_slots / 3)
-    if rows_per_block < 2: rows_per_block = 2
+    # 計算矩形行數
+    # 邏輯：先算平均分配後的行數，若最後一欄平均只有 1 行，則強迫全體增加 1 行
+    rows_per_block = math.ceil((n + 1) / 3)
+    remaining_space = rows_per_block - (n % rows_per_block)
     
+    # 如果平均值所在空間小於 2 行 (且不是剛好整除時)，增加行數
+    if (n % rows_per_block != 0) and remaining_space < 2:
+        rows_per_block += 1
+    elif (n % rows_per_block == 0): # 剛好整除代表平均會單獨在下一欄第一格
+        rows_per_block = rows_per_block # 這種情況下它本來就會有剩餘空間
+
     HEADER_ROW = 1
     DATA_START = 2
     FINAL_ROW = DATA_START + rows_per_block - 1
@@ -90,7 +96,6 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
     ws = wb.active
     ws.title = "成績報表"
 
-    # 設定基本欄寬
     for b in range(3):
         base = b * 4 + 1
         ws.column_dimensions[get_column_letter(base)].width   = 9
@@ -103,7 +108,6 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
     ws.column_dimensions["O"].width = 7
     ws.column_dimensions["P"].width = 7
 
-    # 填入標頭
     for b in range(3):
         base = b * 4 + 1
         for i, h in enumerate(["姓名", "選擇", "非選", "總分"]):
@@ -121,7 +125,7 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
         sc(ws, r, col + 2, nonsel, fill=f, border=all_thin())
         sc(ws, r, col + 3, total,  fill=f, border=all_thin())
 
-    # 處理平均值 (修正框線遺失問題)
+    # 處理平均值
     avg_pos = n
     b_avg = avg_pos // rows_per_block
     r_avg_start = DATA_START + (avg_pos % rows_per_block)
@@ -131,18 +135,15 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
 
     for i, val in enumerate(avg_vals):
         curr_col = col_avg + i
-        # 重點：在合併前，先對該範圍內所有儲存格畫線
+        # 畫線
         for fill_r in range(r_avg_start, r_avg_end + 1):
             sc(ws, fill_r, curr_col, "", border=all_thin())
-        
-        # 執行合併
+        # 合併 (確保至少兩行)
         if r_avg_end > r_avg_start:
             ws.merge_cells(start_row=r_avg_start, start_column=curr_col, end_row=r_avg_end, end_column=curr_col)
-        
-        # 填入數值與設定樣式
         sc(ws, r_avg_start, curr_col, val, bold=True, size=12, border=all_thin())
 
-    # 補齊所有空格的邊框 (確保完美矩形)
+    # 補齊所有空格邊框
     for b in range(3):
         base = b * 4 + 1
         for r in range(DATA_START, FINAL_ROW + 1):
@@ -150,7 +151,7 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
                 for i in range(4):
                     sc(ws, r, base + i, "", border=all_thin())
 
-    # 右側統計資訊
+    # 右側統計與標題
     TITLE_R1, TITLE_R2, TITLE_C1, TITLE_C2 = 2, 7, 14, 16
     ws.merge_cells(start_row=TITLE_R1, start_column=TITLE_C1, end_row=TITLE_R2, end_column=TITLE_C2)
     tc = ws.cell(row=TITLE_R1, column=TITLE_C1)
@@ -179,7 +180,7 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
     return buf, counts, avg_sel, avg_nonsel, avg_total, n
 
 # ════════════════════════════════
-#  UI 介面 (保留所有原始功能)
+#  UI (保留原始功能)
 # ════════════════════════════════
 with st.expander("⚙️ 考試設定", expanded=True):
     exam_name = st.text_input("考試名稱（以空格分三段）", placeholder="國三 金安模擬考 第六回")
