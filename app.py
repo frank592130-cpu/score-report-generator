@@ -114,7 +114,7 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
         ws.column_dimensions[get_column_letter(base+1)].width = 5.5
         ws.column_dimensions[get_column_letter(base+2)].width = 5.5
         ws.column_dimensions[get_column_letter(base+3)].width = 5.5
-    ws.column_dimensions["M"].width = 0.8
+    ws.column_dimensions["M"].width = 0.5
     ws.column_dimensions["N"].width = 7
     ws.column_dimensions["O"].width = 7
     ws.column_dimensions["P"].width = 7
