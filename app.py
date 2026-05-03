@@ -8,83 +8,40 @@ from openpyxl.utils import get_column_letter
 st.set_page_config(page_title="成績報表產生器", page_icon="📊", layout="centered")
 
 # ════════════════════════════════
-#  深色 / 淺色模式切換
+#  全域 CSS 注入（深色模式專用）
 # ════════════════════════════════
-if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
-
-# ════════════════════════════════
-#  全域 CSS 注入（漸層版）
-# ════════════════════════════════
-def inject_css(dark: bool):
-    if dark:
-        page_bg     = (
-            "radial-gradient(ellipse 60% 50% at 15% 20%, rgba(79,142,247,0.13) 0%, transparent 70%),"
-            "radial-gradient(ellipse 50% 45% at 85% 75%, rgba(167,139,250,0.11) 0%, transparent 70%),"
-            "radial-gradient(ellipse 40% 35% at 50% 50%, rgba(56,189,248,0.06) 0%, transparent 60%),"
-            "linear-gradient(145deg, #0a0e1a 0%, #0f1525 40%, #0d1a2e 70%, #0a1020 100%)"
-        )
-        surface     = "#151c30"
-        surface2    = "#1a2240"
-        border_col  = "rgba(79,142,247,0.22)"
-        text        = "#dce8ff"
-        text_sub    = "#7a8fb8"
-        accent_a    = "#4f8ef7"
-        accent_b    = "#a78bfa"
-        accent_grad = "linear-gradient(135deg, #4f8ef7 0%, #a78bfa 100%)"
-        accent_glow = "rgba(79,142,247,0.22)"
-        accent_glow2= "rgba(167,139,250,0.18)"
-        btn_bg      = "rgba(79,142,247,0.10)"
-        btn_hover   = "rgba(79,142,247,0.20)"
-        input_bg    = "#0f1525"
-        success_bg  = "rgba(52,211,153,0.10)"
-        success_col = "#34d399"
-        err_bg      = "rgba(248,113,113,0.10)"
-        err_col     = "#f87171"
-        toggle_icon = "🌙"
-        toggle_tip  = "切換為淺色模式"
-        shadow_card = "0 8px 40px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.04)"
-        shadow_btn  = "0 4px 20px rgba(79,142,247,0.35)"
-        divider_grad= "linear-gradient(90deg, transparent, rgba(79,142,247,0.4), rgba(167,139,250,0.4), transparent)"
-        title_grad  = "linear-gradient(135deg, #7cb8ff 0%, #c4b5fd 60%, #93c5fd 100%)"
-        exp_hdr     = "#131a30"
-        exp_body    = "#0f1525"
-        upload_bg   = "#131a30"
-        upload_hover= "rgba(79,142,247,0.08)"
-    else:
-        page_bg     = (
-            "radial-gradient(ellipse 55% 45% at 10% 15%, rgba(59,110,240,0.10) 0%, transparent 65%),"
-            "radial-gradient(ellipse 50% 40% at 90% 80%, rgba(124,58,237,0.09) 0%, transparent 65%),"
-            "radial-gradient(ellipse 35% 30% at 55% 45%, rgba(14,165,233,0.07) 0%, transparent 55%),"
-            "linear-gradient(150deg, #eef4ff 0%, #f5f0ff 35%, #e8f4fd 65%, #f0f8ff 100%)"
-        )
-        surface     = "#ffffff"
-        surface2    = "#f0f5ff"
-        border_col  = "rgba(99,128,220,0.22)"
-        text        = "#1a1f3c"
-        text_sub    = "#5a6490"
-        accent_a    = "#3b6ef0"
-        accent_b    = "#7c3aed"
-        accent_grad = "linear-gradient(135deg, #3b6ef0 0%, #7c3aed 100%)"
-        accent_glow = "rgba(59,110,240,0.16)"
-        accent_glow2= "rgba(124,58,237,0.12)"
-        btn_bg      = "rgba(59,110,240,0.07)"
-        btn_hover   = "rgba(59,110,240,0.14)"
-        input_bg    = "#f8fbff"
-        success_bg  = "rgba(16,185,129,0.08)"
-        success_col = "#059669"
-        err_bg      = "rgba(220,38,38,0.07)"
-        err_col     = "#dc2626"
-        toggle_icon = "☀️"
-        toggle_tip  = "切換為深色模式"
-        shadow_card = "0 4px 32px rgba(59,110,240,0.10), 0 1px 4px rgba(0,0,0,0.04)"
-        shadow_btn  = "0 4px 16px rgba(59,110,240,0.28)"
-        divider_grad= "linear-gradient(90deg, transparent, rgba(59,110,240,0.3), rgba(124,58,237,0.3), transparent)"
-        title_grad  = "linear-gradient(135deg, #2563eb 0%, #7c3aed 60%, #0ea5e9 100%)"
-        exp_hdr     = "#f0f5ff"
-        exp_body    = "#fafcff"
-        upload_bg   = "#f0f5ff"
-        upload_hover= "rgba(59,110,240,0.06)"
+def inject_css():
+    page_bg     = (
+        "radial-gradient(ellipse 60% 50% at 15% 20%, rgba(79,142,247,0.13) 0%, transparent 70%),"
+        "radial-gradient(ellipse 50% 45% at 85% 75%, rgba(167,139,250,0.11) 0%, transparent 70%),"
+        "radial-gradient(ellipse 40% 35% at 50% 50%, rgba(56,189,248,0.06) 0%, transparent 60%),"
+        "linear-gradient(145deg, #0a0e1a 0%, #0f1525 40%, #0d1a2e 70%, #0a1020 100%)"
+    )
+    surface     = "#151c30"
+    surface2    = "#1a2240"
+    border_col  = "rgba(79,142,247,0.22)"
+    text        = "#dce8ff"
+    text_sub    = "#7a8fb8"
+    accent_a    = "#4f8ef7"
+    accent_b    = "#a78bfa"
+    accent_grad = "linear-gradient(135deg, #4f8ef7 0%, #a78bfa 100%)"
+    accent_glow = "rgba(79,142,247,0.22)"
+    accent_glow2= "rgba(167,139,250,0.18)"
+    btn_bg      = "rgba(79,142,247,0.10)"
+    btn_hover   = "rgba(79,142,247,0.20)"
+    input_bg    = "#0f1525"
+    success_bg  = "rgba(52,211,153,0.10)"
+    success_col = "#34d399"
+    err_bg      = "rgba(248,113,113,0.10)"
+    err_col     = "#f87171"
+    shadow_card = "0 8px 40px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.04)"
+    shadow_btn  = "0 4px 20px rgba(79,142,247,0.35)"
+    divider_grad= "linear-gradient(90deg, transparent, rgba(79,142,247,0.4), rgba(167,139,250,0.4), transparent)"
+    title_grad  = "linear-gradient(135deg, #7cb8ff 0%, #c4b5fd 60%, #93c5fd 100%)"
+    exp_hdr     = "#131a30"
+    exp_body    = "#0f1525"
+    upload_bg   = "#131a30"
+    upload_hover= "rgba(79,142,247,0.08)"
 
     css = f"""
     <style>
@@ -183,30 +140,54 @@ def inject_css(dark: bool):
         padding: 0.6rem 0.9rem !important;
         outline: none !important;
         box-shadow: none !important;
+        caret-color: {accent_a} !important;
     }}
-    /* BaseWeb 容器邊框（產生黑線的元兇）*/
-    .stTextInput [data-baseweb="input"],
-    .stNumberInput [data-baseweb="input"],
-    .stTextInput [data-baseweb="base-input"],
-    .stNumberInput [data-baseweb="base-input"] {{
+
+    /* ── BaseWeb 容器 & 紅線根治 ── */
+    /* 正常狀態 */
+    [data-baseweb="input"],
+    [data-baseweb="base-input"] {{
         background: {input_bg} !important;
         border: 1.5px solid {border_col} !important;
         border-radius: 11px !important;
         outline: none !important;
         box-shadow: none !important;
-        transition: border-color 0.25s, box-shadow 0.25s !important;
     }}
-    /* focus 狀態 — 覆蓋掉紅線 */
-    .stTextInput [data-baseweb="input"]:focus-within,
-    .stNumberInput [data-baseweb="input"]:focus-within,
-    .stTextInput [data-baseweb="base-input"]:focus-within,
-    .stNumberInput [data-baseweb="base-input"]:focus-within,
-    .stTextInput input:focus,
-    .stNumberInput input:focus {{
+    /* hover */
+    [data-baseweb="input"]:hover,
+    [data-baseweb="base-input"]:hover {{
         border-color: {accent_a} !important;
+    }}
+    /* focus-within — 蓋掉所有可能的紅線 */
+    [data-baseweb="input"]:focus-within,
+    [data-baseweb="base-input"]:focus-within {{
+        border: 1.5px solid {accent_a} !important;
         box-shadow: 0 0 0 3px {accent_glow} !important;
         outline: none !important;
+        outline-offset: 0 !important;
     }}
+    /* Streamlit 自己加的 focus pseudo-class */
+    [data-baseweb="input"]:focus,
+    [data-baseweb="base-input"]:focus {{
+        border: 1.5px solid {accent_a} !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
+    }}
+    /* 內部真實 input focus */
+    .stTextInput input:focus,
+    .stNumberInput input:focus,
+    .stTextInput input:focus-visible,
+    .stNumberInput input:focus-visible {{
+        outline: none !important;
+        box-shadow: none !important;
+        border: none !important;
+    }}
+    /* BaseWeb 可能動態加上的 overrides */
+    [data-baseweb="input"] *,
+    [data-baseweb="base-input"] * {{
+        outline: none !important;
+    }}
+
     .stTextInput label,
     .stNumberInput label {{
         color: {text_sub} !important;
@@ -214,6 +195,7 @@ def inject_css(dark: bool):
         font-weight: 600 !important;
         letter-spacing: 0.04em !important;
     }}
+
     /* NumberInput +/- 按鈕 */
     .stNumberInput [data-testid="stNumberInputStepDown"],
     .stNumberInput [data-testid="stNumberInputStepUp"],
@@ -233,7 +215,10 @@ def inject_css(dark: bool):
     }}
     .stNumberInput [data-testid="stNumberInputStepDown"]:focus,
     .stNumberInput [data-testid="stNumberInputStepUp"]:focus,
-    .stNumberInput button:focus {{
+    .stNumberInput button:focus,
+    .stNumberInput [data-testid="stNumberInputStepDown"]:focus-visible,
+    .stNumberInput [data-testid="stNumberInputStepUp"]:focus-visible,
+    .stNumberInput button:focus-visible {{
         outline: none !important;
         box-shadow: none !important;
         border-color: {accent_a} !important;
@@ -250,6 +235,7 @@ def inject_css(dark: bool):
         font-size: 0.9rem !important;
         padding: 0.55rem 1.5rem !important;
         transition: all 0.22s !important;
+        outline: none !important;
     }}
     .stButton > button:hover {{
         background: {btn_hover} !important;
@@ -257,6 +243,13 @@ def inject_css(dark: bool):
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 18px {accent_glow} !important;
     }}
+    .stButton > button:focus,
+    .stButton > button:focus-visible {{
+        outline: none !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
+        border-color: {accent_a} !important;
+    }}
+
     /* ── 主要按鈕（漸層）── */
     .stButton > button[kind="primary"] {{
         background: {accent_grad} !important;
@@ -269,6 +262,12 @@ def inject_css(dark: bool):
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 28px {accent_glow}, 0 2px 8px {accent_glow2} !important;
     }}
+    .stButton > button[kind="primary"]:focus,
+    .stButton > button[kind="primary"]:focus-visible {{
+        outline: none !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
+    }}
+
     /* ── 下載按鈕（漸層）── */
     .stDownloadButton > button {{
         background: {accent_grad} !important;
@@ -282,11 +281,17 @@ def inject_css(dark: bool):
         transition: all 0.22s !important;
         box-shadow: {shadow_btn} !important;
         letter-spacing: 0.02em !important;
+        outline: none !important;
     }}
     .stDownloadButton > button:hover {{
         filter: brightness(1.08) saturate(1.1) !important;
         transform: translateY(-2px) !important;
         box-shadow: 0 10px 32px {accent_glow}, 0 3px 10px {accent_glow2} !important;
+    }}
+    .stDownloadButton > button:focus,
+    .stDownloadButton > button:focus-visible {{
+        outline: none !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
     }}
 
     /* ── 上傳區 ── */
@@ -305,13 +310,18 @@ def inject_css(dark: bool):
     [data-testid="stFileUploaderDropzone"] * {{
         color: {text_sub} !important;
     }}
-    /* 上傳按鈕本身 */
     [data-testid="stFileUploaderDropzone"] button,
     [data-testid="stFileUploaderDropzoneInstructions"] + div button {{
         background: {btn_bg} !important;
         color: {accent_a} !important;
         border: 1.5px solid {border_col} !important;
         border-radius: 9px !important;
+        outline: none !important;
+    }}
+    [data-testid="stFileUploaderDropzone"] button:focus,
+    [data-testid="stFileUploaderDropzone"] button:focus-visible {{
+        outline: none !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
     }}
 
     /* ── Alert ── */
@@ -380,19 +390,6 @@ def inject_css(dark: bool):
     }}
     .avg-sep {{ color: {border_col}; font-weight: 300; }}
 
-    /* ── 門檻標籤 ── */
-    .threshold-row {{ display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: 0.6rem; }}
-    .threshold-badge {{
-        font-size: 0.72rem;
-        font-weight: 600;
-        padding: 0.22rem 0.7rem;
-        border-radius: 999px;
-        background: {btn_bg};
-        color: {accent_a};
-        border: 1px solid {border_col};
-        font-family: 'DM Mono', monospace;
-    }}
-
     /* ── Section label（漸層）── */
     .section-label {{
         font-size: 0.69rem;
@@ -413,12 +410,15 @@ def inject_css(dark: bool):
     [data-testid="stCaptionContainer"] p {{ color: {text_sub} !important; }}
     hr {{ border-color: transparent !important; }}
     #MainMenu, footer, header {{ visibility: hidden !important; }}
+
+    /* ── 全域消除所有 focus outline（最後保險層）── */
+    *:focus {{ outline: none !important; }}
+    *:focus-visible {{ outline: none !important; }}
     </style>
     """
-    return css, toggle_icon, toggle_tip
+    return css
 
-dark = st.session_state.dark_mode
-css_str, toggle_icon, toggle_tip = inject_css(dark)
+css_str = inject_css()
 st.markdown(css_str, unsafe_allow_html=True)
 
 # ════════════════════════════════
@@ -582,15 +582,8 @@ def build_report(students, exam_lines, th_app, th_ap, th_a, th_bpp):
     return buf, counts, avg_sel, avg_nonsel, avg_total, n
 
 # ════════════════════════════════
-#  美化 UI
+#  UI
 # ════════════════════════════════
-
-# 模式切換按鈕（右上角）
-toggle_col1, toggle_col2 = st.columns([8, 1])
-with toggle_col2:
-    if st.button(toggle_icon, help=toggle_tip, key="mode_btn"):
-        st.session_state.dark_mode = not st.session_state.dark_mode
-        st.rerun()
 
 # 標題區
 st.markdown("""
@@ -655,20 +648,12 @@ if uploaded:
                 # 等級磚塊（漸層）
                 st.markdown('<div class="section-label" style="margin-top:1.25rem">📋 報表摘要</div>', unsafe_allow_html=True)
 
-                if dark:
-                    grade_styles = {
-                        "A++": ("linear-gradient(135deg,rgba(79,142,247,0.25),rgba(167,139,250,0.20))", "#93c5fd", "rgba(79,142,247,0.3)"),
-                        "A+":  ("linear-gradient(135deg,rgba(52,211,153,0.18),rgba(16,185,129,0.12))",  "#6ee7b7", "rgba(52,211,153,0.25)"),
-                        "A":   ("linear-gradient(135deg,rgba(251,191,36,0.18),rgba(245,158,11,0.12))",  "#fcd34d", "rgba(251,191,36,0.25)"),
-                        "B++": ("linear-gradient(135deg,rgba(248,113,113,0.18),rgba(239,68,68,0.12))",  "#fca5a5", "rgba(248,113,113,0.25)"),
-                    }
-                else:
-                    grade_styles = {
-                        "A++": ("linear-gradient(135deg,#dbeafe,#ede9fe)", "#2563eb", "rgba(59,110,240,0.15)"),
-                        "A+":  ("linear-gradient(135deg,#d1fae5,#a7f3d0)",  "#065f46", "rgba(16,185,129,0.15)"),
-                        "A":   ("linear-gradient(135deg,#fef9c3,#fde68a)",  "#92400e", "rgba(245,158,11,0.15)"),
-                        "B++": ("linear-gradient(135deg,#fee2e2,#fecaca)",  "#991b1b", "rgba(239,68,68,0.15)"),
-                    }
+                grade_styles = {
+                    "A++": ("linear-gradient(135deg,rgba(79,142,247,0.25),rgba(167,139,250,0.20))", "#93c5fd", "rgba(79,142,247,0.3)"),
+                    "A+":  ("linear-gradient(135deg,rgba(52,211,153,0.18),rgba(16,185,129,0.12))",  "#6ee7b7", "rgba(52,211,153,0.25)"),
+                    "A":   ("linear-gradient(135deg,rgba(251,191,36,0.18),rgba(245,158,11,0.12))",  "#fcd34d", "rgba(251,191,36,0.25)"),
+                    "B++": ("linear-gradient(135deg,rgba(248,113,113,0.18),rgba(239,68,68,0.12))",  "#fca5a5", "rgba(248,113,113,0.25)"),
+                }
                 tiles_html = '<div class="metric-row">'
                 for g, (bg_tile, col_tile, border_tile) in grade_styles.items():
                     tiles_html += (
