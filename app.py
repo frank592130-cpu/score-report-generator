@@ -14,282 +14,284 @@ if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
 
 # ════════════════════════════════
-#  全域 CSS 注入
+#  全域 CSS 注入（漸層版）
 # ════════════════════════════════
 def inject_css(dark: bool):
     if dark:
-        bg          = "#0f1117"
-        surface     = "#1a1d27"
-        surface2    = "#22263a"
-        border_col  = "#2e3250"
-        text        = "#e8ecf4"
-        text_sub    = "#8892b0"
-        accent      = "#4f8ef7"
-        accent_glow = "rgba(79,142,247,0.18)"
-        accent2     = "#63d8b4"
-        btn_bg      = "#1e2235"
-        btn_hover   = "#2a3050"
-        input_bg    = "#1a1d27"
-        tag_bg      = "#252a40"
-        success_bg  = "rgba(99,216,180,0.12)"
-        success_col = "#63d8b4"
-        err_bg      = "rgba(255,100,100,0.1)"
-        err_col     = "#ff6464"
+        # 深色漸層：深藍宇宙感
+        page_bg     = "linear-gradient(145deg, #0a0e1a 0%, #0f1525 40%, #0d1a2e 70%, #0a1020 100%)"
+        surface     = "rgba(20,26,46,0.85)"
+        surface2    = "rgba(26,32,58,0.7)"
+        border_col  = "rgba(79,142,247,0.18)"
+        text        = "#dce8ff"
+        text_sub    = "#7a8fb8"
+        accent_a    = "#4f8ef7"
+        accent_b    = "#a78bfa"
+        accent_grad = "linear-gradient(135deg, #4f8ef7 0%, #a78bfa 100%)"
+        accent_glow = "rgba(79,142,247,0.22)"
+        accent_glow2= "rgba(167,139,250,0.18)"
+        btn_bg      = "rgba(79,142,247,0.10)"
+        btn_hover   = "rgba(79,142,247,0.20)"
+        input_bg    = "rgba(15,21,37,0.9)"
+        success_bg  = "rgba(52,211,153,0.10)"
+        success_col = "#34d399"
+        err_bg      = "rgba(248,113,113,0.10)"
+        err_col     = "#f87171"
         toggle_icon = "☀️"
         toggle_tip  = "切換為淺色模式"
-        shadow      = "0 8px 32px rgba(0,0,0,0.45)"
-        divider     = "rgba(255,255,255,0.06)"
+        shadow_card = "0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)"
+        shadow_btn  = "0 4px 20px rgba(79,142,247,0.35)"
+        divider_grad= "linear-gradient(90deg, transparent, rgba(79,142,247,0.4), rgba(167,139,250,0.4), transparent)"
+        # header title gradient
+        title_grad  = "linear-gradient(135deg, #7cb8ff 0%, #c4b5fd 60%, #93c5fd 100%)"
+        # expander header bg gradient
+        exp_hdr     = "linear-gradient(135deg, rgba(20,28,55,0.95) 0%, rgba(18,25,50,0.95) 100%)"
+        exp_body    = "rgba(14,20,40,0.7)"
+        # upload zone
+        upload_bg   = "rgba(16,22,42,0.6)"
+        upload_hover= "rgba(79,142,247,0.08)"
+        # orb glows for bg
+        orb_css = """
+        .stApp::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 50% at 15% 20%, rgba(79,142,247,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 45% at 85% 75%, rgba(167,139,250,0.10) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 35% at 50% 50%, rgba(56,189,248,0.05) 0%, transparent 60%);
+        }"""
     else:
-        bg          = "#f4f6fb"
-        surface     = "#ffffff"
-        surface2    = "#f0f3fa"
-        border_col  = "#dce2f0"
-        text        = "#1a1f36"
-        text_sub    = "#5a6480"
-        accent      = "#2563eb"
-        accent_glow = "rgba(37,99,235,0.12)"
-        accent2     = "#059669"
-        btn_bg      = "#eef2ff"
-        btn_hover   = "#dde5ff"
-        input_bg    = "#f8faff"
-        tag_bg      = "#eef2ff"
-        success_bg  = "rgba(5,150,105,0.08)"
+        # 淺色漸層：清透藍紫珍珠感
+        page_bg     = "linear-gradient(150deg, #eef4ff 0%, #f5f0ff 35%, #e8f4fd 65%, #f0f8ff 100%)"
+        surface     = "rgba(255,255,255,0.85)"
+        surface2    = "rgba(240,245,255,0.80)"
+        border_col  = "rgba(99,128,220,0.18)"
+        text        = "#1a1f3c"
+        text_sub    = "#5a6490"
+        accent_a    = "#3b6ef0"
+        accent_b    = "#7c3aed"
+        accent_grad = "linear-gradient(135deg, #3b6ef0 0%, #7c3aed 100%)"
+        accent_glow = "rgba(59,110,240,0.16)"
+        accent_glow2= "rgba(124,58,237,0.12)"
+        btn_bg      = "rgba(59,110,240,0.07)"
+        btn_hover   = "rgba(59,110,240,0.14)"
+        input_bg    = "rgba(248,251,255,0.95)"
+        success_bg  = "rgba(16,185,129,0.08)"
         success_col = "#059669"
         err_bg      = "rgba(220,38,38,0.07)"
         err_col     = "#dc2626"
         toggle_icon = "🌙"
         toggle_tip  = "切換為深色模式"
-        shadow      = "0 4px 24px rgba(30,50,120,0.10)"
-        divider     = "rgba(0,0,0,0.07)"
+        shadow_card = "0 4px 32px rgba(59,110,240,0.10), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)"
+        shadow_btn  = "0 4px 16px rgba(59,110,240,0.28)"
+        divider_grad= "linear-gradient(90deg, transparent, rgba(59,110,240,0.3), rgba(124,58,237,0.3), transparent)"
+        title_grad  = "linear-gradient(135deg, #2563eb 0%, #7c3aed 60%, #0ea5e9 100%)"
+        exp_hdr     = "linear-gradient(135deg, rgba(245,248,255,0.97) 0%, rgba(240,244,255,0.97) 100%)"
+        exp_body    = "rgba(253,254,255,0.92)"
+        upload_bg   = "rgba(241,246,255,0.8)"
+        upload_hover= "rgba(59,110,240,0.06)"
+        orb_css = """
+        .stApp::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 55% 45% at 10% 15%, rgba(59,110,240,0.09) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 90% 80%, rgba(124,58,237,0.08) 0%, transparent 65%),
+                radial-gradient(ellipse 35% 30% at 55% 45%, rgba(14,165,233,0.06) 0%, transparent 55%);
+        }"""
 
     css = f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-    :root {{
-        --bg:         {bg};
-        --surface:    {surface};
-        --surface2:   {surface2};
-        --border:     {border_col};
-        --text:       {text};
-        --text-sub:   {text_sub};
-        --accent:     {accent};
-        --accent-g:   {accent_glow};
-        --accent2:    {accent2};
-        --btn-bg:     {btn_bg};
-        --btn-hover:  {btn_hover};
-        --input-bg:   {input_bg};
-        --tag-bg:     {tag_bg};
-        --shadow:     {shadow};
-        --divider:    {divider};
-    }}
-
-    /* ── Base ── */
-    html, body, .stApp {{
-        background: var(--bg) !important;
-        color: var(--text) !important;
+    /* ── Base & Background ── */
+    html, body {{ margin: 0; padding: 0; }}
+    .stApp {{
+        background: {page_bg} !important;
+        background-attachment: fixed !important;
+        color: {text} !important;
         font-family: 'Noto Sans TC', sans-serif !important;
+        position: relative;
     }}
+    {orb_css}
     .block-container {{
-        padding-top: 2rem !important;
-        padding-bottom: 3rem !important;
-        max-width: 760px !important;
+        padding-top: 2.2rem !important;
+        padding-bottom: 3.5rem !important;
+        max-width: 780px !important;
+        position: relative; z-index: 1;
     }}
+    * {{ box-sizing: border-box; }}
 
-    /* ── Header ── */
-    .app-header {{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 0.25rem;
-    }}
+    /* ── 標題漸層文字 ── */
     .app-title {{
-        font-size: 1.7rem;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -0.03em;
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.65rem;
+        line-height: 1.1;
+    }}
+    .app-title .title-text {{
+        background: {title_grad};
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }}
     .app-title .icon-badge {{
-        background: var(--accent);
+        background: {accent_grad};
         color: #fff;
-        border-radius: 10px;
-        width: 38px; height: 38px;
+        border-radius: 12px;
+        width: 42px; height: 42px;
         display: inline-flex; align-items: center; justify-content: center;
-        font-size: 1.1rem;
-        box-shadow: 0 2px 12px var(--accent-g);
+        font-size: 1.15rem;
+        box-shadow: 0 3px 16px {accent_glow}, 0 1px 4px rgba(0,0,0,0.15);
+        flex-shrink: 0;
     }}
     .app-subtitle {{
-        color: var(--text-sub);
-        font-size: 0.85rem;
-        margin-top: 0.15rem;
-        margin-bottom: 1.5rem;
+        color: {text_sub};
+        font-size: 0.84rem;
+        margin-top: 0.3rem;
+        margin-bottom: 1.6rem;
         letter-spacing: 0.01em;
     }}
 
-    /* ── Divider ── */
+    /* ── 漸層分隔線 ── */
     .styled-divider {{
-        height: 1px;
-        background: var(--divider);
-        margin: 1.25rem 0;
+        height: 1.5px;
+        background: {divider_grad};
+        margin: 1.4rem 0;
         border: none;
     }}
 
-    /* ── Card ── */
-    .card {{
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 1.5rem 1.75rem;
-        box-shadow: var(--shadow);
-        margin-bottom: 1.25rem;
-        transition: box-shadow 0.2s;
-    }}
-    .card:hover {{
-        box-shadow: 0 8px 40px var(--accent-g);
-    }}
-    .card-label {{
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent);
-        margin-bottom: 0.85rem;
-        display: flex; align-items: center; gap: 0.4rem;
-    }}
-    .card-label::after {{
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-        margin-left: 0.5rem;
-    }}
-
-    /* ── Expander ── */
+    /* ── Expander（毛玻璃卡片）── */
     [data-testid="stExpander"] {{
-        background: var(--surface) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 16px !important;
-        box-shadow: var(--shadow) !important;
-        overflow: hidden;
+        background: {surface} !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid {border_col} !important;
+        border-radius: 18px !important;
+        box-shadow: {shadow_card} !important;
+        overflow: hidden !important;
     }}
     [data-testid="stExpander"] summary {{
-        color: var(--text) !important;
-        font-weight: 600 !important;
+        color: {text} !important;
+        font-weight: 700 !important;
         font-size: 0.92rem !important;
-        padding: 1rem 1.25rem !important;
-        background: var(--surface2) !important;
+        padding: 1rem 1.4rem !important;
+        background: {exp_hdr} !important;
+        letter-spacing: 0.01em !important;
     }}
     [data-testid="stExpander"] summary:hover {{
-        background: var(--btn-hover) !important;
+        background: {btn_hover} !important;
     }}
     [data-testid="stExpander"] > div > div {{
-        padding: 1.2rem 1.25rem 1.4rem !important;
-        background: var(--surface) !important;
+        padding: 1.3rem 1.4rem 1.5rem !important;
+        background: {exp_body} !important;
     }}
 
-    /* ── Inputs & Selects ── */
+    /* ── Input ── */
     .stTextInput input,
     .stNumberInput input {{
-        background: var(--input-bg) !important;
-        border: 1.5px solid var(--border) !important;
-        border-radius: 10px !important;
-        color: var(--text) !important;
+        background: {input_bg} !important;
+        border: 1.5px solid {border_col} !important;
+        border-radius: 11px !important;
+        color: {text} !important;
         font-family: 'Noto Sans TC', sans-serif !important;
         font-size: 0.92rem !important;
-        padding: 0.55rem 0.85rem !important;
-        transition: border-color 0.2s, box-shadow 0.2s !important;
+        padding: 0.6rem 0.9rem !important;
+        transition: border-color 0.25s, box-shadow 0.25s !important;
+        backdrop-filter: blur(4px) !important;
     }}
     .stTextInput input:focus,
     .stNumberInput input:focus {{
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px var(--accent-g) !important;
+        border-color: {accent_a} !important;
+        box-shadow: 0 0 0 3px {accent_glow}, 0 0 0 6px {accent_glow2} !important;
         outline: none !important;
     }}
     .stTextInput label,
     .stNumberInput label {{
-        color: var(--text-sub) !important;
+        color: {text_sub} !important;
         font-size: 0.78rem !important;
-        font-weight: 500 !important;
-        letter-spacing: 0.03em !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.04em !important;
     }}
 
-    /* ── Buttons ── */
+    /* ── 一般按鈕 ── */
     .stButton > button {{
-        background: var(--btn-bg) !important;
-        color: var(--accent) !important;
-        border: 1.5px solid var(--border) !important;
-        border-radius: 10px !important;
+        background: {btn_bg} !important;
+        color: {accent_a} !important;
+        border: 1.5px solid {border_col} !important;
+        border-radius: 11px !important;
         font-family: 'Noto Sans TC', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.9rem !important;
         padding: 0.55rem 1.5rem !important;
-        transition: all 0.2s !important;
-        letter-spacing: 0.02em !important;
+        transition: all 0.22s !important;
+        backdrop-filter: blur(4px) !important;
     }}
     .stButton > button:hover {{
-        background: var(--btn-hover) !important;
-        border-color: var(--accent) !important;
+        background: {btn_hover} !important;
+        border-color: {accent_a} !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 16px var(--accent-g) !important;
+        box-shadow: 0 4px 18px {accent_glow} !important;
     }}
-    /* Primary button */
+    /* ── 主要按鈕（漸層）── */
     .stButton > button[kind="primary"] {{
-        background: var(--accent) !important;
+        background: {accent_grad} !important;
         color: #ffffff !important;
-        border-color: var(--accent) !important;
+        border: none !important;
+        box-shadow: {shadow_btn} !important;
     }}
     .stButton > button[kind="primary"]:hover {{
-        filter: brightness(1.1) !important;
+        filter: brightness(1.08) saturate(1.1) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px var(--accent-g) !important;
+        box-shadow: 0 8px 28px {accent_glow}, 0 2px 8px {accent_glow2} !important;
     }}
-    /* Download button */
+    /* ── 下載按鈕（漸層）── */
     .stDownloadButton > button {{
-        background: var(--accent) !important;
+        background: {accent_grad} !important;
         color: #fff !important;
         border: none !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         font-family: 'Noto Sans TC', sans-serif !important;
         font-weight: 700 !important;
         font-size: 0.95rem !important;
-        padding: 0.65rem 1.5rem !important;
-        transition: all 0.2s !important;
+        padding: 0.7rem 1.5rem !important;
+        transition: all 0.22s !important;
+        box-shadow: {shadow_btn} !important;
         letter-spacing: 0.02em !important;
     }}
     .stDownloadButton > button:hover {{
-        filter: brightness(1.12) !important;
+        filter: brightness(1.08) saturate(1.1) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px var(--accent-g) !important;
+        box-shadow: 0 10px 32px {accent_glow}, 0 3px 10px {accent_glow2} !important;
     }}
 
-    /* ── File Uploader ── */
+    /* ── 上傳區 ── */
     [data-testid="stFileUploaderDropzone"] {{
-        background: var(--surface2) !important;
-        border: 2px dashed var(--border) !important;
-        border-radius: 14px !important;
-        padding: 2rem !important;
-        transition: border-color 0.2s, background 0.2s !important;
+        background: {upload_bg} !important;
+        backdrop-filter: blur(8px) !important;
+        border: 2px dashed {border_col} !important;
+        border-radius: 16px !important;
+        padding: 2.2rem !important;
+        transition: border-color 0.25s, background 0.25s, box-shadow 0.25s !important;
     }}
     [data-testid="stFileUploaderDropzone"]:hover {{
-        border-color: var(--accent) !important;
-        background: var(--accent-g) !important;
+        border-color: {accent_a} !important;
+        background: {upload_hover} !important;
+        box-shadow: 0 0 0 3px {accent_glow} !important;
     }}
     [data-testid="stFileUploaderDropzone"] * {{
-        color: var(--text-sub) !important;
-    }}
-    [data-testid="stFileUploaderDropzoneInstructions"] span {{
-        color: var(--text-sub) !important;
-        font-size: 0.88rem !important;
+        color: {text_sub} !important;
     }}
 
-    /* ── Alerts ── */
+    /* ── Alert ── */
     [data-testid="stAlert"] {{
         border-radius: 12px !important;
         border: none !important;
         font-size: 0.88rem !important;
+        backdrop-filter: blur(6px) !important;
     }}
     .stSuccess {{
         background: {success_bg} !important;
@@ -302,93 +304,111 @@ def inject_css(dark: bool):
         border-left: 3px solid {err_col} !important;
     }}
 
-    /* ── Summary metric tiles ── */
+    /* ── 等級磚塊 ── */
     .metric-row {{
-        display: flex;
-        gap: 0.75rem;
-        margin: 1rem 0 0.75rem;
+        display: flex; gap: 0.8rem; margin: 1rem 0 0.8rem;
     }}
     .metric-tile {{
         flex: 1;
-        border-radius: 12px;
-        padding: 0.85rem 0.6rem;
+        border-radius: 14px;
+        padding: 1rem 0.6rem;
         text-align: center;
-        border: 1px solid var(--border);
-        background: var(--surface2);
-        transition: transform 0.15s;
+        border: 1px solid {border_col};
+        backdrop-filter: blur(8px);
+        transition: transform 0.18s, box-shadow 0.18s;
+        position: relative; overflow: hidden;
     }}
-    .metric-tile:hover {{ transform: translateY(-2px); }}
+    .metric-tile::before {{
+        content: '';
+        position: absolute; inset: 0;
+        background: inherit;
+        filter: blur(0);
+        z-index: -1;
+    }}
+    .metric-tile:hover {{
+        transform: translateY(-3px);
+        box-shadow: 0 8px 28px {accent_glow};
+    }}
     .metric-tile .grade-label {{
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--text-sub);
-        margin-bottom: 0.3rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 0.35rem;
     }}
     .metric-tile .grade-count {{
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 800;
-        color: var(--text);
         line-height: 1;
     }}
 
+    /* ── 平均列（漸層邊框）── */
     .avg-row {{
-        display: flex;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 0.85rem 1.25rem;
-        margin-top: 0.75rem;
+        display: flex; gap: 1.5rem; flex-wrap: wrap;
+        background: {surface2};
+        backdrop-filter: blur(8px);
+        border: 1px solid {border_col};
+        border-radius: 13px;
+        padding: 0.9rem 1.3rem;
+        margin-top: 0.8rem;
         font-size: 0.88rem;
-        color: var(--text-sub);
+        color: {text_sub};
+        position: relative;
     }}
-    .avg-row strong {{ color: var(--accent); font-weight: 700; }}
-    .avg-sep {{
-        color: var(--border);
-        font-weight: 300;
+    .avg-row::before {{
+        content: '';
+        position: absolute; inset: 0;
+        border-radius: 13px;
+        padding: 1px;
+        background: {accent_grad};
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.4;
+        pointer-events: none;
     }}
+    .avg-row strong {{
+        background: {accent_grad};
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+    }}
+    .avg-sep {{ color: {border_col}; font-weight: 300; }}
 
-    /* ── Threshold badges ── */
-    .threshold-row {{
-        display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.5rem;
-    }}
+    /* ── 門檻標籤 ── */
+    .threshold-row {{ display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: 0.6rem; }}
     .threshold-badge {{
         font-size: 0.72rem;
         font-weight: 600;
-        padding: 0.2rem 0.6rem;
+        padding: 0.22rem 0.7rem;
         border-radius: 999px;
-        background: var(--tag-bg);
-        color: var(--text-sub);
-        border: 1px solid var(--border);
+        background: {btn_bg};
+        color: {accent_a};
+        border: 1px solid {border_col};
         font-family: 'DM Mono', monospace;
+        backdrop-filter: blur(4px);
     }}
 
-    /* ── Mode toggle button ── */
-    .mode-toggle-wrap {{
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: -0.5rem;
-    }}
-
-    /* ── Section label ── */
+    /* ── Section label（漸層）── */
     .section-label {{
-        font-size: 0.7rem;
+        font-size: 0.69rem;
         font-weight: 700;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.13em;
         text-transform: uppercase;
-        color: var(--accent);
-        margin-bottom: 0.5rem;
-        margin-top: 1.25rem;
+        margin-bottom: 0.55rem;
+        margin-top: 1.3rem;
+        background: {accent_grad};
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: inline-block;
     }}
 
-    /* ── Misc overrides ── */
-    .stMarkdown p {{ color: var(--text) !important; }}
-    [data-testid="stCaptionContainer"] p {{ color: var(--text-sub) !important; }}
-    hr {{ border-color: var(--divider) !important; }}
-
-    /* hide streamlit branding */
+    /* ── Misc ── */
+    .stMarkdown p {{ color: {text} !important; }}
+    [data-testid="stCaptionContainer"] p {{ color: {text_sub} !important; }}
+    hr {{ border-color: transparent !important; }}
     #MainMenu, footer, header {{ visibility: hidden !important; }}
     </style>
     """
@@ -573,7 +593,7 @@ with toggle_col2:
 st.markdown("""
 <div class="app-title">
   <span class="icon-badge">📊</span>
-  成績報表產生器
+  <span class="title-text">成績報表產生器</span>
 </div>
 <div class="app-subtitle">上傳成績 Excel，自動排名並輸出格式化報表</div>
 """, unsafe_allow_html=True)
@@ -640,19 +660,27 @@ if uploaded:
                     type="primary"
                 )
 
-                # 等級磚塊
+                # 等級磚塊（漸層）
                 st.markdown('<div class="section-label" style="margin-top:1.25rem">📋 報表摘要</div>', unsafe_allow_html=True)
 
-                grade_styles = {
-                    "A++": ("linear-gradient(135deg,#dbeafe,#bfdbfe)", "#1d4ed8"),
-                    "A+":  ("#e9e9e9", "#444"),
-                    "A":   ("#d4d4d4", "#333"),
-                    "B++": ("#b0b0b0", "#222"),
-                }
+                if dark:
+                    grade_styles = {
+                        "A++": ("linear-gradient(135deg,rgba(79,142,247,0.25),rgba(167,139,250,0.20))", "#93c5fd", "rgba(79,142,247,0.3)"),
+                        "A+":  ("linear-gradient(135deg,rgba(52,211,153,0.18),rgba(16,185,129,0.12))",  "#6ee7b7", "rgba(52,211,153,0.25)"),
+                        "A":   ("linear-gradient(135deg,rgba(251,191,36,0.18),rgba(245,158,11,0.12))",  "#fcd34d", "rgba(251,191,36,0.25)"),
+                        "B++": ("linear-gradient(135deg,rgba(248,113,113,0.18),rgba(239,68,68,0.12))",  "#fca5a5", "rgba(248,113,113,0.25)"),
+                    }
+                else:
+                    grade_styles = {
+                        "A++": ("linear-gradient(135deg,#dbeafe,#ede9fe)", "#2563eb", "rgba(59,110,240,0.15)"),
+                        "A+":  ("linear-gradient(135deg,#d1fae5,#a7f3d0)",  "#065f46", "rgba(16,185,129,0.15)"),
+                        "A":   ("linear-gradient(135deg,#fef9c3,#fde68a)",  "#92400e", "rgba(245,158,11,0.15)"),
+                        "B++": ("linear-gradient(135deg,#fee2e2,#fecaca)",  "#991b1b", "rgba(239,68,68,0.15)"),
+                    }
                 tiles_html = '<div class="metric-row">'
-                for g, (bg_tile, col_tile) in grade_styles.items():
+                for g, (bg_tile, col_tile, border_tile) in grade_styles.items():
                     tiles_html += (
-                        f'<div class="metric-tile" style="background:{bg_tile};border-color:{col_tile}22">'
+                        f'<div class="metric-tile" style="background:{bg_tile};border-color:{border_tile}">'
                         f'  <div class="grade-label" style="color:{col_tile}">{g}</div>'
                         f'  <div class="grade-count" style="color:{col_tile}">{counts[g]}</div>'
                         f'</div>'
