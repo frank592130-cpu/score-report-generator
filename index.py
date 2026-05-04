@@ -161,18 +161,17 @@ HTML_TEMPLATE = '''
             --mesh-color-4: #020617;
         }
         body {
-    background-color: #020617;
-    /* 改成更柔和的漸層，且固定背景不動 */
-    background-image: 
-        radial-gradient(at 0% 0%, #1e1b4b 0, transparent 50%), 
-        radial-gradient(at 100% 0%, #312e81 0, transparent 50%),
-        radial-gradient(at 50% 100%, #0f172a 0, transparent 50%); /* 降低底部亮度 */
-    background-attachment: fixed; /* 關鍵：讓漸層固定，不會因為頁面長短而亂跑 */
-    min-height: 100vh;
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    color: #f8fafc;
-}
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, #1e1b4b 0, transparent 50%), 
+                radial-gradient(at 100% 0%, #312e81 0, transparent 50%),
+                radial-gradient(at 50% 100%, #0f172a 0, transparent 50%); /* 降低底部亮度 */
+            background-attachment: fixed; /* 關鍵：讓漸層固定，不會因為頁面長短而亂跑 */
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: #f8fafc;
+        }
         .glass-card {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(12px);
