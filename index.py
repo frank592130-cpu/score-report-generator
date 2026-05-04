@@ -42,36 +42,79 @@ def sc(ws, row, col, value, bold=False, size=10, fill=None, border=None):
     if fill: cell.fill = fill
     return cell
 
+# ---------------------------------------------------------
+# 1. 更新讀取邏輯：加入「學號」提取 (索引 4 為 E 欄)
+# ---------------------------------------------------------
 def read_students_initial(file_stream):
-    # data_only=True 會讀取公式計算後的數值，而非公式本身
-    # keep_vba=False 讀取時不處理巨集，這能增加穩定性
     try:
         wb = openpyxl.load_workbook(file_stream, data_only=True)
         ws = wb.active
         students = []
-        
-        # 從第 2 列開始讀取 (跳過標題)
         for row in ws.iter_rows(min_row=2, values_only=True):
             if not row or len(row) < 15: continue
             
-            # 取得姓名 (第 O 欄，索引 14)
             name = str(row[14]).strip() if row[14] is not None else ""
+            student_id = str(row[4]).strip() if row[4] is not None else "" # E 欄：考生代號
             
-            # 過濾無效資料與標題行
-            if name in ["", "預設標準答案", "None", "None"]:
-                continue
+            if name in ["", "預設標準答案", "None"]: continue
                 
             try:
-                # 取得選擇題分數 X (第 H 欄「客觀題」，索引 7)
                 x_val = float(row[7]) if row[7] is not None else 0.0
-                students.append({"name": name, "x": x_val})
-            except (ValueError, TypeError):
-                continue
-                
+                students.append({
+                    "id": student_id, 
+                    "name": name, 
+                    "x": x_val,
+                    "y": 0 # 預設手寫 0 分
+                })
+            except (ValueError, TypeError): continue
         return students
     except Exception as e:
-        print(f"讀取 Excel 失敗: {e}")
         return []
+
+# ---------------------------------------------------------
+# 2. 新增路由：生成補習班專用貼上檔
+# ---------------------------------------------------------
+@app.route('/generate_copy_list', methods=['POST'])
+def generate_copy_list():
+    students_json = request.form.get('students_json', '[]')
+    students = json.loads(students_json)
+    
+    # 計算總分並排序 (依學號從小到大)
+    # 這裡將學號轉為整數排序，避免 "10" 排在 "2" 前面的問題
+    def get_sort_key(s):
+        try: return int(s.get('id', 0))
+        except: return 999999
+        
+    sorted_list = sorted(students, key=get_sort_key)
+    
+    # 建立一個新的 Excel 檔案
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "補習班貼上專用"
+    
+    # 設定標題 (方便對照，你可以只複製分數欄)
+    ws.cell(row=1, column=1, value="學號")
+    ws.cell(row=1, column=2, value="姓名")
+    ws.cell(row=1, column=3, value="總分 (表現)")
+    
+    for i, s in enumerate(sorted_list, start=2):
+        x = float(s.get('x', 0))
+        y = float(s.get('y', 0))
+        total = (x / 25.0) * 85.0 + (y / 6.0) * 15.0
+        
+        ws.cell(row=i, column=1, value=s.get('id'))
+        ws.cell(row=i, column=2, value=s.get('name'))
+        
+        # 關鍵邏輯：若總分為 0，則留白
+        if total == 0:
+            ws.cell(row=i, column=3, value="")
+        else:
+            ws.cell(row=i, column=3, value=round(total, 2))
+            
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf, as_attachment=True, download_name="CramSchool_Import.xlsx")
 
 def build_excel(students_data, exam_lines, ths):
     students_for_render = []
@@ -298,9 +341,16 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     </div>
                 </div>
 
-                <button type="submit" id="submit-btn" class="btn-main w-full py-4 rounded-xl font-bold text-white shadow-xl opacity-50 cursor-not-allowed" disabled>
-                    下載成績單
-                </button>
+                <!-- 按鈕區塊：左邊是原本的報表，右邊是補習班專用 -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button type="submit" id="submit-btn" class="btn-main flex-[2] py-4 rounded-xl font-bold text-white shadow-xl opacity-50 cursor-not-allowed" disabled>
+                        下載成績報表 (.xlsx)
+                    </button>
+                    
+                    <button type="button" id="copy-btn" onclick="downloadCopyList()" class="flex-1 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 py-4 rounded-xl font-bold transition-all opacity-50 cursor-not-allowed" disabled title="依學號排序，0分會留白">
+                        生成補習班貼上表
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -492,6 +542,47 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         }
 
         document.querySelectorAll('.th-input').forEach(i => i.onchange = updateDashboard);
+        // 這個函數負責切換後端路徑，下載完後會自動切換回來
+function downloadCopyList() {
+    const form = document.getElementById('main-form');
+    const originalAction = form.action;
+    
+    // 暫時將表單發送到補習班專用的後端路由
+    form.action = '/generate_copy_list';
+    form.submit();
+    
+    // 延遲一下下就改回原本的路徑，避免影響到一般的下載
+    setTimeout(() => { 
+        form.action = originalAction; 
+    }, 500);
+}
+
+// 另外，請確保你的 refreshUI 函數有更新，讓兩個按鈕一起變亮
+function refreshUI() {
+    const hasData = studentsData.length > 0;
+    const submitBtn = document.getElementById('submit-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    
+    if (hasData) {
+        document.getElementById('st-count').innerText = studentsData.length;
+        document.getElementById('success-bar').classList.remove('hidden');
+        
+        // 啟動兩個按鈕
+        [submitBtn, copyBtn].forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+        
+        renderStudentsInputs();
+        updateDashboard();
+    } else {
+        document.getElementById('success-bar').classList.add('hidden');
+        [submitBtn, copyBtn].forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        });
+    }
+}
     </script>
 </body>
 </html>'''
