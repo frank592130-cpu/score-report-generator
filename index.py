@@ -44,14 +44,29 @@ def sc(ws, row, col, value, bold=False, size=10, fill=None, border=None):
 
 def read_students_initial(file_stream):
     wb = openpyxl.load_workbook(file_stream, data_only=True)
+    ws = wb.active
     students = []
-    for row in wb.active.iter_rows(values_only=True):
-        if not row or row[0] is None: continue
+    
+    # 遍歷每一列，跳過標題（第1列）
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row or len(row) < 15: continue
+        
+        # 1. 取得姓名（在第 O 欄，索引 14）
+        name = str(row[14]).strip() if row[14] is not None else ""
+        
+        # 2. 取得選擇題分數 X（在第 H 欄「客觀題」，索引 7）
+        # 排除掉「預設標準答案」那一行
+        if name == "" or name == "預設標準答案" or name == "None":
+            continue
+            
         try:
-            name = str(row[0]).strip()
-            x_val = float(row[1]) if row[1] is not None else 0.0
+            # 轉換分數，若為空則給 0
+            x_val = float(row[7]) if row[7] is not None else 0.0
             students.append({"name": name, "x": x_val})
-        except: pass
+        except (ValueError, TypeError):
+            # 如果分數那一格不是數字則跳過
+            continue
+            
     return students
 
 def build_excel(students_data, exam_lines, ths):
