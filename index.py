@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file, render_template_string, jsonify
 import math
 import io
+import json
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -42,11 +43,6 @@ def sc(ws, row, col, value, bold=False, size=10, fill=None, border=None):
     return cell
 
 def read_students_initial(file_stream):
-    """
-    自動從上傳的 EXCEL 檔讀取學生資料
-    第一欄：學生姓名
-    第二欄：選擇題答對題數 (X)
-    """
     wb = openpyxl.load_workbook(file_stream, data_only=True)
     students = []
     for row in wb.active.iter_rows(values_only=True):
@@ -59,12 +55,10 @@ def read_students_initial(file_stream):
     return students
 
 def build_excel(students_data, exam_lines, ths):
-    # 根據公式轉換為原本繪圖所需的格式：(姓名, 選擇分數X, 非選分數Y, 總分)
     students_for_render = []
     for s in students_data:
         x = float(s.get('x', 0))
         y = float(s.get('y', 0))
-        # 總分計算：(X/25)*85 + (Y/6)*15
         total = (x / 25.0) * 85.0 + (y / 6.0) * 15.0
         students_for_render.append((s.get('name', ''), x, y, round(total, 2)))
 
@@ -79,7 +73,7 @@ def build_excel(students_data, exam_lines, ths):
         elif t >= ths['th_a']: counts["A"] += 1
         elif t >= ths['th_bpp']: counts["B++"] += 1
 
-    rows_per_block = math.ceil((n + 2) / 3) 
+    rows_per_block = math.ceil((n + 2) / 3) if n > 0 else 1
     HEADER_ROW, DATA_START = 1, 2
     FINAL_ROW = DATA_START + rows_per_block - 1
 
@@ -111,24 +105,23 @@ def build_excel(students_data, exam_lines, ths):
         for i, val in enumerate([name, sel, nonsel, total]):
             sc(ws, r, col + i, val, fill=f, border=all_thin())
 
-    # 平均值
-    avg_pos = n
-    b_avg, r_avg_start = avg_pos // rows_per_block, DATA_START + (avg_pos % rows_per_block)
-    col_avg_base = b_avg * 4 + 1
-    avg_vals = ["平均", 
-                round(sum(s[1] for s in students_for_render)/n, 2) if n > 0 else 0, 
-                round(sum(s[2] for s in students_for_render)/n, 2) if n > 0 else 0, 
-                round(sum(s[3] for s in students_for_render)/n, 2) if n > 0 else 0]
-    
-    for i, val in enumerate(avg_vals):
-        curr_col = col_avg_base + i
-        for fill_r in range(r_avg_start, FINAL_ROW + 1):
-            sc(ws, fill_r, curr_col, "", border=all_thin())
-        if FINAL_ROW > r_avg_start:
-            ws.merge_cells(start_row=r_avg_start, start_column=curr_col, end_row=FINAL_ROW, end_column=curr_col)
-        sc(ws, r_avg_start, curr_col, val, bold=True, border=all_thin())
+    if n > 0:
+        avg_pos = n
+        b_avg, r_avg_start = avg_pos // rows_per_block, DATA_START + (avg_pos % rows_per_block)
+        col_avg_base = b_avg * 4 + 1
+        avg_vals = ["平均", 
+                    round(sum(s[1] for s in students_for_render)/n, 2), 
+                    round(sum(s[2] for s in students_for_render)/n, 2), 
+                    round(sum(s[3] for s in students_for_render)/n, 2)]
+        
+        for i, val in enumerate(avg_vals):
+            curr_col = col_avg_base + i
+            for fill_r in range(r_avg_start, FINAL_ROW + 1):
+                sc(ws, fill_r, curr_col, "", border=all_thin())
+            if FINAL_ROW > r_avg_start:
+                ws.merge_cells(start_row=r_avg_start, start_column=curr_col, end_row=FINAL_ROW, end_column=curr_col)
+            sc(ws, r_avg_start, curr_col, val, bold=True, border=all_thin())
 
-    # 標題與人數方格
     TITLE_R1, TITLE_R2, TITLE_C1, TITLE_C2 = 2, 7, 14, 16
     ws.merge_cells(start_row=TITLE_R1, start_column=TITLE_C1, end_row=TITLE_R2, end_column=TITLE_C2)
     tc = ws.cell(row=TITLE_R1, column=TITLE_C1)
@@ -156,7 +149,7 @@ def build_excel(students_data, exam_lines, ths):
     return buf
 
 # ════════════════════════════════
-# Vercel & UI 漸層設計
+# UI 模板 (新增手動輸入功能)
 # ════════════════════════════════
 
 HTML_TEMPLATE = '''<!DOCTYPE html>
@@ -195,7 +188,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+        .btn-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
         .stat-card {
             background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
             border: 1px solid rgba(255,255,255,0.1);
@@ -208,6 +201,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         input[type=number] {
             -moz-appearance: textfield;
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4 md:p-12 flex justify-center">
@@ -216,7 +212,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             <h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 SCORE REPORT GENERATOR
             </h1>
-            <p class="text-slate-400 text-sm font-medium"></p>
         </header>
 
         <div class="glass-card rounded-2xl p-8 space-y-6">
@@ -225,47 +220,61 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 
                 <div>
                     <label class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block">考試名稱</label>
-                    <input type="text" name="exam_name" value="" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    <input type="text" name="exam_name" placeholder="例如：112學年度 第二學期 第一次段考" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-bold">A++</label>
+                        <label class="text-[10px] text-slate-500 font-bold">A++ 門檻</label>
                         <input type="number" step="0.1" id="th_app" name="th_app" value="93.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-bold">A+</label>
+                        <label class="text-[10px] text-slate-500 font-bold">A+ 門檻</label>
                         <input type="number" step="0.1" id="th_ap" name="th_ap" value="85.7" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-bold">A</label>
+                        <label class="text-[10px] text-slate-500 font-bold">A 門檻</label>
                         <input type="number" step="0.1" id="th_a" name="th_a" value="76.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] text-slate-500 font-bold">B++</label>
+                        <label class="text-[10px] text-slate-500 font-bold">B++ 門檻</label>
                         <input type="number" step="0.1" id="th_bpp" name="th_bpp" value="67.1" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center">
                     </div>
                 </div>
 
-                <div id="dropzone" class="group border-2 border-dashed border-slate-800 rounded-xl p-10 text-center hover:border-indigo-500 hover:bg-indigo-500/5 transition-all cursor-pointer">
-                    <input type="file" id="file-input" accept=".xlsx" class="hidden">
-                    <div id="upload-content">
-                        <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📁</div>
-                        <p class="text-sm text-slate-500" id="file-status">點選或拖拽 XLSX 檔案至此 (讀卡檔案)</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 讀卡機上傳 -->
+                    <div id="dropzone" class="group border-2 border-dashed border-slate-800 rounded-xl p-6 text-center hover:border-indigo-500 hover:bg-indigo-500/5 transition-all cursor-pointer">
+                        <input type="file" id="file-input" accept=".xlsx" class="hidden">
+                        <div id="upload-content">
+                            <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">📁</div>
+                            <p class="text-xs text-slate-500" id="file-status">讀卡機 XLSX 檔案</p>
+                        </div>
+                    </div>
+
+                    <!-- 手動新增學生 -->
+                    <div class="border border-slate-800 rounded-xl p-4 bg-slate-900/30 space-y-3">
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">手動新增名單</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="manual-name" placeholder="姓名" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm outline-none focus:border-indigo-500">
+                            <input type="number" id="manual-x" placeholder="X (選擇)" class="w-20 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm text-center outline-none focus:border-indigo-500">
+                            <button type="button" onclick="addManualStudent()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded text-xs font-bold transition-colors">新增</button>
+                        </div>
                     </div>
                 </div>
 
                 <div id="success-bar" class="hidden bg-indigo-500/10 border border-indigo-500/20 py-3 px-4 rounded-lg flex items-center justify-between">
-                    <span class="text-xs text-indigo-300 font-medium">✨ 讀取成功：<span id="st-count">0</span> 位成員</span>
+                    <span class="text-xs text-indigo-300 font-medium">✨ 目前清單：<span id="st-count">0</span> 位成員</span>
                     <span class="text-[10px] px-2 py-0.5 bg-indigo-500/20 rounded-full text-indigo-400">READY</span>
                 </div>
 
                 <div id="students-scores-container" class="hidden space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <h3 class="text-sm font-bold text-indigo-400">手寫分數登錄區 (滿分 6 分)</h3>
+                        <h3 class="text-sm font-bold text-indigo-400">分數登錄區 (手寫滿分 6 分)</h3>
                         <span class="text-[10px] text-slate-500">總分 = (X/25)*85 + (Y/6)*15</span>
                     </div>
-                    <div id="students-list" class="max-h-64 overflow-y-auto pr-1 space-y-2">
+                    <div id="students-list" class="max-h-64 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+                        <!-- 學生項目將在此產生 -->
                     </div>
                 </div>
 
@@ -276,7 +285,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         </div>
 
         <div class="space-y-4">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-1"></h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="stat-card rounded-2xl p-6 text-center">
                     <p class="text-[10px] text-indigo-400 font-bold uppercase">A++</p>
@@ -325,6 +333,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
         dropzone.onclick = () => fileInput.click();
 
+        // 處理讀卡機上傳
         fileInput.onchange = async () => {
             const file = fileInput.files[0];
             if (!file) return;
@@ -336,22 +345,62 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 const res = await fetch('/upload_read', { method: 'POST', body: formData });
                 const d = await res.json();
                 if (d.students && d.students.length > 0) {
-                    studentsData = d.students.map(s => ({ name: s.name, x: s.x, y: 0 }));
-                    
-                    document.getElementById('st-count').innerText = studentsData.length;
-                    document.getElementById('success-bar').classList.remove('hidden');
-                    document.getElementById('file-status').innerText = file.name;
-                    document.getElementById('file-status').classList.add('text-indigo-400', 'font-bold');
-
-                    renderStudentsInputs();
-                    updateDashboard();
-
-                    const submitBtn = document.getElementById('submit-btn');
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    // 合併新舊資料，以姓名為基準避免重複
+                    d.students.forEach(newSt => {
+                        if(!studentsData.some(s => s.name === newSt.name)) {
+                            studentsData.push({ name: newSt.name, x: newSt.x, y: 0 });
+                        }
+                    });
+                    refreshUI();
                 }
             } catch (e) { console.error(e); }
         };
+
+        // 手動新增學生邏輯
+        function addManualStudent() {
+            const nameInp = document.getElementById('manual-name');
+            const xInp = document.getElementById('manual-x');
+            const name = nameInp.value.trim();
+            const x = parseFloat(xInp.value) || 0;
+
+            if (!name) { alert("請輸入學生姓名"); return; }
+            
+            if (studentsData.some(s => s.name === name)) {
+                if(!confirm("名單中已有此學生，是否要重複新增？")) return;
+            }
+
+            studentsData.push({ name: name, x: x, y: 0 });
+            
+            // 清空輸入
+            nameInp.value = '';
+            xInp.value = '';
+            
+            refreshUI();
+        }
+
+        // 移除學生
+        function removeStudent(index) {
+            studentsData.splice(index, 1);
+            refreshUI();
+        }
+
+        function refreshUI() {
+            if (studentsData.length > 0) {
+                document.getElementById('st-count').innerText = studentsData.length;
+                document.getElementById('success-bar').classList.remove('hidden');
+                
+                const submitBtn = document.getElementById('submit-btn');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                renderStudentsInputs();
+                updateDashboard();
+            } else {
+                document.getElementById('success-bar').classList.add('hidden');
+                document.getElementById('students-scores-container').classList.add('hidden');
+                document.getElementById('submit-btn').disabled = true;
+            }
+        }
 
         function renderStudentsInputs() {
             const listDiv = document.getElementById('students-list');
@@ -363,11 +412,14 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 row.innerHTML = `
                     <div class="flex-1 flex items-center justify-between">
                         <span class="text-sm font-semibold text-slate-200">${s.name}</span>
-                        <span class="text-xs text-slate-500">選擇答對: <b class="text-indigo-300">${s.x}</b> 題</span>
+                        <span class="text-[10px] text-slate-500">選擇: <b class="text-indigo-300">${s.x}</b> 題</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">手寫 Y (0~6)</label>
-                        <input type="number" min="0" max="6" step="0.5" value="0" data-idx="${idx}" class="student-y-input w-16 bg-slate-950 border border-slate-700 rounded p-1 text-center font-bold text-emerald-400 outline-none focus:border-indigo-500">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1">
+                            <label class="text-[9px] font-bold text-slate-500 uppercase">手寫 Y</label>
+                            <input type="number" min="0" max="6" step="0.5" value="${s.y}" data-idx="${idx}" class="student-y-input w-12 bg-slate-950 border border-slate-700 rounded p-1 text-center text-xs font-bold text-emerald-400 outline-none focus:border-indigo-500">
+                        </div>
+                        <button type="button" onclick="removeStudent(${idx})" class="text-slate-600 hover:text-red-500 transition-colors text-lg">×</button>
                     </div>
                 `;
                 listDiv.appendChild(row);
@@ -448,7 +500,7 @@ def analyze_full():
     }
     n = len(students)
     if n == 0: 
-        return jsonify({})
+        return jsonify({"count":0, "avg_sel":0, "avg_nonsel":0, "avg_total":0, "counts":{"A++":0,"A+":0,"A":0,"B++":0}})
 
     counts = {"A++": 0, "A+": 0, "A": 0, "B++": 0}
     sum_sel = 0
@@ -479,14 +531,18 @@ def analyze_full():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    exam_name = request.form.get('exam_name', '')
+    exam_name = request.form.get('exam_name', '成績報表')
     ths = {k: float(request.form.get(k, 0)) for k in ['th_app', 'th_ap', 'th_a', 'th_bpp']}
-    import json
+    
     students_json = request.form.get('students_json', '[]')
     students = json.loads(students_json)
     
+    # 標題處理邏輯
     parts = exam_name.strip().split()
-    lines = [parts[0], " ".join(parts[1:-1]), parts[-1]] if len(parts) >= 3 else ["", exam_name, ""]
+    if len(parts) >= 3:
+        lines = [parts[0], " ".join(parts[1:-1]), parts[-1]]
+    else:
+        lines = ["", exam_name, ""]
     
     buf = build_excel(students, lines, ths)
     return send_file(buf, as_attachment=True, download_name=f"{exam_name}.xlsx")
