@@ -205,7 +205,7 @@ HTML_TEMPLATE = '''
             </div>
 
             <button type="submit" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-[0.98]">
-                🚀 產生並下載 Excel 報表
+                下載 Excel 報表
             </button>
         </form>
     </div>
