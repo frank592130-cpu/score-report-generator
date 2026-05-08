@@ -170,7 +170,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S R G - Score Report</title>
+    <title>TIME SAVER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -187,7 +187,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 </head>
 <body class="p-4 md:p-12 flex justify-center">
     <div class="max-w-4xl w-full space-y-8">
-        <header class="text-center"><h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">SCORE REPORT GENERATOR</h1></header>
+        <header class="text-center"><h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">TIME SAVER</h1></header>
 
         <div class="glass-card rounded-2xl p-8 space-y-6 shadow-2xl">
             <form id="main-form" action="/generate" method="post" class="space-y-6">
@@ -195,7 +195,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 
                 <div>
                     <label class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block">考試名稱</label>
-                    <input type="text" name="exam_name" placeholder="例如：113學年度 第一次 模擬考" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="text" name="exam_name" placeholder="例如：國三 金安模擬考 第一回" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -208,10 +208,10 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div id="dropzone" class="border-2 border-dashed border-slate-800 rounded-xl p-8 text-center hover:border-indigo-500 cursor-pointer">
                         <input type="file" id="file-input" accept=".xlsx, .xlsm" class="hidden">
-                        <div class="text-2xl mb-1">📁</div><p class="text-xs text-slate-500">點擊或拖放 讀卡機 XLSX 或 XLSM 檔案</p>
+                        <div class="text-2xl mb-1">📁</div><p class="text-xs text-slate-500">讀卡機 XLSX 或 XLSM 檔案</p>
                     </div>
                     <div class="border border-slate-800 rounded-xl p-4 bg-slate-900/30 space-y-3">
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase">手動新增單筆</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase">手動新增</p>
                         <div class="flex gap-2">
                             <input type="text" id="manual-name" placeholder="姓名" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm outline-none">
                             <input type="number" id="manual-x" placeholder="選擇" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm text-center">
@@ -221,7 +221,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 </div>
 
                 <div id="success-bar" class="hidden bg-indigo-500/10 border border-indigo-500/20 py-3 px-4 rounded-lg flex items-center justify-between">
-                    <span class="text-xs text-indigo-300 font-medium">✨ 載入成功：<span id="st-count">0</span> 位學員</span>
+                    <span class="text-xs text-indigo-300 font-medium">✨ 載入成功：<span id="st-count">0</span> 位學生</span>
                     <span class="text-[10px] px-2 py-0.5 bg-indigo-500/20 rounded-full text-indigo-400 font-bold uppercase">Ready</span>
                 </div>
 
@@ -234,7 +234,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] uppercase tracking-[0.2em] text-indigo-400 font-bold block">2. 貼入補習班 APP 名單順序 (每人一行)</label>
+                    <label class="text-[10px] uppercase tracking-[0.2em] text-indigo-400 font-bold block">名單順序 (每人一行)</label>
                     <textarea id="ordered_names" name="ordered_names" rows="5" placeholder="請直接貼入補習班系統的名單順序..." class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none custom-scrollbar"></textarea>
                 </div>
 
