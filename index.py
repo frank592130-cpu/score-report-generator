@@ -44,6 +44,7 @@ def sc(ws, row, col, value, bold=False, size=10, fill=None, border=None):
 
 def read_students_initial(file_stream):
     try:
+        # data_only=True 確保讀取的是計算後的數值，支援 xlsx 與 xlsm
         wb = openpyxl.load_workbook(file_stream, data_only=True)
         ws = wb.active
         students = []
@@ -57,7 +58,9 @@ def read_students_initial(file_stream):
                 students.append({"id": student_id, "name": name, "x": x_val, "y": 0})
             except (ValueError, TypeError): continue
         return students
-    except Exception: return []
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return []
 
 @app.route('/generate_copy_list', methods=['POST'])
 def generate_copy_list():
@@ -160,7 +163,7 @@ def build_excel(students_data, exam_lines, ths):
     return buf
 
 # ════════════════════════════════
-# UI 模板 (對調功能位子)
+# UI 模板 (支援 XLSM 文字更新)
 # ════════════════════════════════
 HTML_TEMPLATE = '''<!DOCTYPE html>
 <html lang="zh-TW">
@@ -205,10 +208,10 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div id="dropzone" class="border-2 border-dashed border-slate-800 rounded-xl p-8 text-center hover:border-indigo-500 cursor-pointer">
                         <input type="file" id="file-input" accept=".xlsx, .xlsm" class="hidden">
-                        <div class="text-2xl mb-1">📁</div><p class="text-xs text-slate-500">點擊或拖放 讀卡機 XLSX</p>
+                        <div class="text-2xl mb-1">📁</div><p class="text-xs text-slate-500">點擊或拖放 讀卡機 XLSX 或 XLSM 檔案</p>
                     </div>
                     <div class="border border-slate-800 rounded-xl p-4 bg-slate-900/30 space-y-3">
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase">手動新增</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase">手動新增單筆</p>
                         <div class="flex gap-2">
                             <input type="text" id="manual-name" placeholder="姓名" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm outline-none">
                             <input type="number" id="manual-x" placeholder="選擇" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm text-center">
@@ -264,11 +267,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             try {
                 const res = await fetch('/upload_read', { method: 'POST', body: formData });
                 const d = await res.json();
-                if (d.students) {
+                if (d.students && d.students.length > 0) {
                     d.students.forEach(newSt => {
                         if(!studentsData.some(s => s.name === newSt.name)) studentsData.push({ name: newSt.name, x: newSt.x, y: 0 });
                     });
                     refreshUI();
+                } else {
+                    alert("檔案讀取失敗或格式不正確（請確保學生姓名在第 O 欄，選擇分數在第 P 欄）");
                 }
             } catch (e) { console.error(e); }
         };
@@ -360,6 +365,7 @@ def index(): return render_template_string(HTML_TEMPLATE)
 def upload_read():
     file = request.files.get('file')
     if not file: return jsonify({"students": []})
+    # 直接讀取，openpyxl 會處理副檔名辨識
     return jsonify({"students": read_students_initial(io.BytesIO(file.read()))})
 
 @app.route('/analyze_full', methods=['POST'])
