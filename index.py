@@ -43,7 +43,7 @@ def sc(ws, row, col, value, bold=False, size=10, fill=None, border=None):
     return cell
 
 # ---------------------------------------------------------
-# 1. 更新讀取邏輯：改抓 P 欄 (Index 15)
+# 1. 更新讀取邏輯
 # ---------------------------------------------------------
 def read_students_initial(file_stream):
     try:
@@ -51,17 +51,15 @@ def read_students_initial(file_stream):
         ws = wb.active
         students = []
         for row in ws.iter_rows(min_row=2, values_only=True):
-            # 確保該列至少有 16 欄 (到 P 欄)
-            if not row or len(row) < 16: continue
+            if not row or len(row) < 15: continue
             
-            name = str(row[14]).strip() if row[14] is not None else "" # O 欄姓名
-            student_id = str(row[4]).strip() if row[4] is not None else "" # E 欄學號
+            name = str(row[14]).strip() if row[14] is not None else ""
+            student_id = str(row[4]).strip() if row[4] is not None else "" 
             
             if name in ["", "預設標準答案", "None"]: continue
                 
             try:
-                # 修改處：將索引從 7 (H欄) 改為 15 (P欄)
-                x_val = float(row[15]) if row[15] is not None else 0.0
+                x_val = float(row[7]) if row[7] is not None else 0.0
                 students.append({
                     "id": student_id, 
                     "name": name, 
@@ -74,36 +72,47 @@ def read_students_initial(file_stream):
         return []
 
 # ---------------------------------------------------------
-# 2. 依據貼上的名單順序生成檔案 (邏輯維持不變)
+# 2. 修改：依據貼上的名單順序生成檔案
 # ---------------------------------------------------------
 @app.route('/generate_copy_list', methods=['POST'])
 def generate_copy_list():
     students_json = request.form.get('students_json', '[]')
+    # 獲取使用者貼入的 App 順序名單
     ordered_names_raw = request.form.get('ordered_names', '')
     
     students = json.loads(students_json)
+    # 建立一個以姓名為 Key 的字典，方便快速查詢
     student_map = {s['name']: s for s in students}
+    
+    # 解析名單：依換行符切割，並過濾掉空白行
     ordered_names = [n.strip() for n in ordered_names_raw.split('\n') if n.strip()]
     
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "補習班貼上專用"
     
+    # 標題列
     ws.cell(row=1, column=1, value="APP名單順序")
     ws.cell(row=1, column=2, value="總分 (表現)")
     
+    # 依照貼入的名單順序填寫
     for i, target_name in enumerate(ordered_names, start=2):
         ws.cell(row=i, column=1, value=target_name)
+        
+        # 尋找該學生是否有成績資料
         if target_name in student_map:
             s = student_map[target_name]
             x = float(s.get('x', 0))
             y = float(s.get('y', 0))
             total = (x / 25.0) * 85.0 + (y / 6.0) * 15.0
+            
+            # 若總分為 0，則留白 (符合使用者需求)
             if total == 0:
                 ws.cell(row=i, column=2, value="")
             else:
                 ws.cell(row=i, column=2, value=round(total, 2))
         else:
+            # 沒在資料庫裡 (請假或無成績)，成績欄位留白
             ws.cell(row=i, column=2, value="")
             
     buf = io.BytesIO()
@@ -206,7 +215,7 @@ def build_excel(students_data, exam_lines, ths):
     return buf
 
 # ════════════════════════════════
-# UI 模板 (維持最新樣式)
+# UI 模板 (新增名單貼入框)
 # ════════════════════════════════
 
 HTML_TEMPLATE = '''<!DOCTYPE html>
@@ -334,7 +343,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <span class="text-[10px] text-slate-500">總分 = (X/25)*85 + (Y/6)*15</span>
                     </div>
                     <div id="students-list" class="max-h-64 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
-                    </div>
+                        </div>
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-4">
