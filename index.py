@@ -272,7 +272,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
     <div class="max-w-4xl w-full space-y-8">
         <header class="text-center space-y-2">
             <h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                SCORE REPORT GENERATOR
+                
             </h1>
         </header>
 
