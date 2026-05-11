@@ -99,11 +99,11 @@ def build_excel(students_data, exam_lines, ths):
     wb = openpyxl.Workbook()
     ws = wb.active
     
-    BLOCK_WIDTHS = [
-            [7.25, 4.50, 4.50, 5.75],   # A B C D
-            [7.25, 4.50, 4.50, 5.75],   # E F G H
-            [7.25, 8.88, 8.88, 8.88],   # I J K L
-        ]
+        BLOCK_WIDTHS = [
+                [7.25, 4.50, 4.50, 5.75],   # A B C D
+                [7.25, 4.50, 4.50, 5.75],   # E F G H
+                [7.25, 8.88, 8.88, 8.88],   # I J K L
+            ]
         for b in range(3):
             base = b * 4 + 1
             for offset, w in enumerate(BLOCK_WIDTHS[b]):
