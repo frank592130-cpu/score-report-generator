@@ -233,10 +233,10 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A++ 門檻</label><input type="number" step="0.1" id="th_app" name="th_app" value="93.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-indigo-400"></div>
-                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A+ 門檻</label><input type="number" step="0.1" id="th_ap" name="th_ap" value="85.7" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-emerald-400"></div>
-                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A 門檻</label><input type="number" step="0.1" id="th_a" name="th_a" value="76.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-amber-400"></div>
-                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">B++ 門檻</label><input type="number" step="0.1" id="th_bpp" name="th_bpp" value="67.1" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-pink-400"></div>
+                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A++ 門檻</label><input type="number" step="0.1" inputmode="decimal" id="th_app" name="th_app" value="93.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-indigo-400"></div>
+                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A+ 門檻</label><input type="number" step="0.1" inputmode="decimal" id="th_ap" name="th_ap" value="85.7" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-emerald-400"></div>
+                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A 門檻</label><input type="number" step="0.1" inputmode="decimal" id="th_a" name="th_a" value="76.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-amber-400"></div>
+                    <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">B++ 門檻</label><input type="number" step="0.1" inputmode="decimal" id="th_bpp" name="th_bpp" value="67.1" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-pink-400"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -248,7 +248,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                         <p class="text-[10px] text-indigo-400 font-bold uppercase">手動新增</p>
                         <div class="flex flex-wrap gap-2 items-center">
                             <input type="text" id="manual-name" placeholder="姓名" class="flex-1 min-w-[80px] bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm outline-none">
-                            <input type="number" id="manual-x" placeholder="選擇" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm text-center">
+                            <input type="number" id="manual-x" inputmode="decimal" placeholder="選擇" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm text-center">
                             <label class="flex items-center gap-1 text-xs text-slate-400 cursor-pointer">
                                 <input type="checkbox" id="manual-leave" class="accent-indigo-500"> 請假
                             </label>
@@ -367,7 +367,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
                 let inputSection = '';
                 if (!s.is_leave) {
-                    inputSection = `<input type="number" min="0" max="6" step="0.5" value="${s.y}" data-idx="${idx}" class="student-y-input w-12 bg-slate-950 border border-slate-700 rounded p-1 text-center text-xs font-bold text-emerald-400 outline-none">`;
+                    inputSection = `<input type="number" inputmode="decimal" min="0" max="6" step="0.5" value="${s.y}" data-idx="${idx}" class="student-y-input w-12 bg-slate-950 border border-slate-700 rounded p-1 text-center text-xs font-bold text-emerald-400 outline-none">`;
                 } else {
                     inputSection = `<div class="w-12"></div>`;
                 }
