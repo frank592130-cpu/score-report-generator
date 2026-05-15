@@ -188,7 +188,7 @@ def build_excel(students_data, exam_lines, ths):
     return buf
 
 # ════════════════════════════════
-# UI 模板
+# UI 模板 (已加入時鐘 Icon)
 # ════════════════════════════════
 HTML_TEMPLATE = '''<!DOCTYPE html>
 <html lang="zh-TW">
@@ -196,6 +196,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIME SAVER</title>
+    <!-- 引入 Font Awesome 圖標庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -212,7 +214,13 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 </head>
 <body class="p-4 md:p-12 flex justify-center">
     <div class="max-w-4xl w-full space-y-8">
-        <header class="text-center"><h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">TIME SAVER</h1></header>
+        <!-- 網頁標題：已加入時鐘 Icon -->
+        <header class="text-center">
+            <h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center justify-center gap-3">
+                <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+                <span>TIME SAVER</span>
+            </h1>
+        </header>
 
         <div class="glass-card rounded-2xl p-8 space-y-6 shadow-2xl">
             <form id="main-form" action="/generate" method="post" class="space-y-6">
@@ -491,5 +499,3 @@ def generate_copy_list():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
