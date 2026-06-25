@@ -54,7 +54,6 @@ def read_students_initial(file_stream):
             if name in ["", "預設標準答案", "None"]: continue
             try:
                 x_val = float(row[9]) if row[9] is not None else 0.0
-                # 預設非請假
                 students.append({"id": student_id, "name": name, "x": x_val, "y": 0, "is_leave": False})
             except (ValueError, TypeError): continue
         return students
@@ -62,7 +61,7 @@ def read_students_initial(file_stream):
         print(f"Error reading file: {e}")
         return []
 
-def build_excel(students_data, exam_lines, ths):
+def build_excel(students_data, exam_lines, ths, exam_type="mock"):
     # 分離正常學生與請假學生
     normal_list = []
     leave_list = []
@@ -98,6 +97,10 @@ def build_excel(students_data, exam_lines, ths):
     
     wb = openpyxl.Workbook()
     ws = wb.active
+    ws.title = "成績單"
+    
+    # 強制開啟網格線
+    ws.views.sheetView[0].showGridLines = True
     
     for b in range(3):
         base = b * 4 + 1
@@ -118,26 +121,30 @@ def build_excel(students_data, exam_lines, ths):
         if s['is_leave']:
             # 請假學生：姓名不填色，後三欄合併寫「假」且不填色
             sc(ws, r, col, s['name'], border=all_thin())
-            # 合併 選擇(col+1)、非選(col+2)、總分(col+3)
             ws.merge_cells(start_row=r, start_column=col+1, end_row=r, end_column=col+3)
             sc(ws, r, col+1, "假", border=all_thin())
-            # 確保被合併的格子也有邊框
             for i in range(1, 4):
                 ws.cell(row=r, column=col+i).border = all_thin()
         else:
             # 正常學生
-            g = ""
-            total = s['total']
-            if total >= ths['th_app']: g = "A++"
-            elif total >= ths['th_ap']: g = "A+"
-            elif total >= ths['th_a']: g = "A"
-            elif total >= ths['th_bpp']: g = "B++"
-            f = FILLS.get(g)
-            vals = [s['name'], s['x'], s['y'], total]
+            f = None
+            if exam_type == "mock":  # 僅在模擬考模式下才抓取級距背景色
+                g = ""
+                total = s['total']
+                if total >= ths['th_app']: g = "A++"
+                elif total >= ths['th_ap']: g = "A+"
+                elif total >= ths['th_a']: g = "A"
+                elif total >= ths['th_bpp']: g = "B++"
+                f = FILLS.get(g)
+                
+            vals = [s['name'], s['x'], s['y'], s['total']]
             for i, val in enumerate(vals):
-                sc(ws, r, col + i, val, fill=f, border=all_thin())
+                cell = sc(ws, r, col + i, val, fill=f, border=all_thin())
+                # 總分欄位格式化為 0.00
+                if i == 3:
+                    cell.number_format = '0.00'
 
-    # 平均值計算（僅限正常學生）
+    # 平均值計算與完美排版（僅限正常學生）
     if n_total > 0:
         avg_pos = n_total
         b_avg, r_avg_start = avg_pos // rows_per_block, DATA_START + (avg_pos % rows_per_block)
@@ -159,9 +166,13 @@ def build_excel(students_data, exam_lines, ths):
                 sc(ws, fill_r, curr_col, "", border=all_thin())
             if FINAL_ROW > r_avg_start: 
                 ws.merge_cells(start_row=r_avg_start, start_column=curr_col, end_row=FINAL_ROW, end_column=curr_col)
-            sc(ws, r_avg_start, curr_col, val, bold=True, border=all_thin())
+            
+            cell = sc(ws, r_avg_start, curr_col, val, bold=True, border=all_thin())
+            # 強制讓數值平均值在 Excel 中完全格式化為兩位小數 (0.00)
+            if i > 0 and isinstance(val, (int, float)):
+                cell.number_format = '0.00'
 
-    # 標題與人數統計渲染 (保持不變)
+    # 標題與人數統計渲染 (僅在模擬考模式下顯示完整統計)
     TITLE_R1, TITLE_R2, TITLE_C1, TITLE_C2 = 2, 7, 14, 16
     ws.merge_cells(start_row=TITLE_R1, start_column=TITLE_C1, end_row=TITLE_R2, end_column=TITLE_C2)
     tc = ws.cell(row=TITLE_R1, column=TITLE_C1)
@@ -171,17 +182,18 @@ def build_excel(students_data, exam_lines, ths):
         for c in range(TITLE_C1, TITLE_C2 + 1):
             ws.cell(row=r, column=c).border = outer_med(r, c, TITLE_R1, TITLE_C1, TITLE_R2, TITLE_C2)
     
-    visible_grades = [("A++", counts["A++"]), ("A+", counts["A+"]), ("A", counts["A"]), ("B++", counts["B++"])]
-    GRADE_R1 = TITLE_R2 + 4 
-    for i, (g, cnt) in enumerate(visible_grades):
-        row = GRADE_R1 + i
-        f = FILLS.get(g)
-        for col, val in [(14, g), (15, cnt)]:
-            cell = ws.cell(row=row, column=col, value=val)
-            cell.font, cell.alignment = Font(name=FONT_NAME, bold=True, size=11), Alignment(horizontal="center", vertical="center")
-            cell.border = outer_med(row, col, GRADE_R1, 14, GRADE_R1 + 3, 15)
-            if f: cell.fill = f
-            
+    if exam_type == "mock":
+        visible_grades = [("A++", counts["A++"]), ("A+", counts["A+"]), ("A", counts["A"]), ("B++", counts["B++"])]
+        GRADE_R1 = TITLE_R2 + 4 
+        for i, (g, cnt) in enumerate(visible_grades):
+            row = GRADE_R1 + i
+            f = FILLS.get(g)
+            for col, val in [(14, g), (15, cnt)]:
+                cell = ws.cell(row=row, column=col, value=val)
+                cell.font, cell.alignment = Font(name=FONT_NAME, bold=True, size=11), Alignment(horizontal="center", vertical="center")
+                cell.border = outer_med(row, col, GRADE_R1, 14, GRADE_R1 + 3, 15)
+                if f: cell.fill = f
+                
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -221,7 +233,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-1">
                         <label class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block">考試種類</label>
-                        <select id="exam_type" name="exam_type" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-300 cursor-pointer">
+                        <select id="exam_type" name="exam_type" onchange="toggleExamTypeMode()" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-300 cursor-pointer">
                             <option value="mock" selected class="bg-slate-950 text-slate-200">模擬考</option>
                             <option value="paper_a" class="bg-slate-950 text-slate-200">A卷</option>
                         </select>
@@ -232,7 +244,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div id="threshold-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center transition-all duration-300">
                     <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A++ 門檻</label><input type="number" step="0.1" id="th_app" name="th_app" value="93.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-indigo-400"></div>
                     <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A+ 門檻</label><input type="number" step="0.1" id="th_ap" name="th_ap" value="85.7" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-emerald-400"></div>
                     <div class="space-y-1"><label class="text-[10px] text-slate-500 font-bold">A 門檻</label><input type="number" step="0.1" id="th_a" name="th_a" value="76.2" class="th-input w-full bg-slate-950/50 border border-slate-800 rounded-lg p-2 text-center text-amber-400"></div>
@@ -282,7 +294,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             </form>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div id="dashboard-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-300">
             <div class="glass-card rounded-2xl p-6 text-center"><p class="text-[10px] text-indigo-400 font-bold">A++</p><h2 id="sum-app" class="text-3xl font-black">--</h2></div>
             <div class="glass-card rounded-2xl p-6 text-center"><p class="text-[10px] text-emerald-400 font-bold">A+</p><h2 id="sum-ap" class="text-3xl font-black">--</h2></div>
             <div class="glass-card rounded-2xl p-6 text-center"><p class="text-[10px] text-amber-400 font-bold">A</p><h2 id="sum-a" class="text-3xl font-black">--</h2></div>
@@ -329,7 +341,6 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             if (!name) return;
             studentsData.push({ name, x, y: 0, is_leave });
             
-            // 重置輸入
             nameInp.value = ''; xInp.value = ''; leaveInp.checked = false;
             refreshUI();
         }
@@ -419,6 +430,20 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             } catch (e) { console.error(e); }
         }
 
+        function toggleExamTypeMode() {
+            const examType = document.getElementById('exam_type').value;
+            const thContainer = document.getElementById('threshold-container');
+            const dbCards = document.getElementById('dashboard-cards');
+            
+            if (examType === 'paper_a') {
+                thContainer.classList.add('opacity-20', 'pointer-events-none');
+                dbCards.classList.add('opacity-0');
+            } else {
+                thContainer.classList.remove('opacity-20', 'pointer-events-none');
+                dbCards.classList.remove('opacity-0');
+            }
+        }
+
         function downloadCopyList() {
             const names = document.getElementById('ordered_names').value.trim();
             if (!names) { alert("請先貼入 APP 名單順序！"); return; }
@@ -448,7 +473,6 @@ def analyze_full():
     ths = {k: float(data.get(k, 0)) for k in ['th_app', 'th_ap', 'th_a', 'th_bpp']}
     counts = {"A++": 0, "A+": 0, "A": 0, "B++": 0}
     for s in students:
-        # 請假學生不計入統計
         if s.get('is_leave', False): continue
         total = (float(s.get('x', 0)) / 25.0) * 85.0 + (float(s.get('y', 0)) / 6.0) * 15.0
         if total >= ths['th_app']: counts["A++"] += 1
@@ -460,11 +484,18 @@ def analyze_full():
 @app.route('/generate', methods=['POST'])
 def generate():
     exam_name = request.form.get('exam_name', '成績報表')
+    exam_type = request.form.get('exam_type', 'mock')
     ths = {k: float(request.form.get(k, 0)) for k in ['th_app', 'th_ap', 'th_a', 'th_bpp']}
     students = json.loads(request.form.get('students_json', '[]'))
     parts = exam_name.strip().split()
     lines = [parts[0], " ".join(parts[1:-1]), parts[-1]] if len(parts) >= 3 else ["", exam_name, ""]
-    return send_file(build_excel(students, lines, ths), as_attachment=True, download_name=f"{exam_name}.xlsx")
+    
+    # 完美將 exam_type 注入轉檔引擎
+    return send_file(
+        build_excel(students, lines, ths, exam_type=exam_type), 
+        as_attachment=True, 
+        download_name=f"{exam_name}.xlsx"
+    )
 
 @app.route('/generate_copy_list', methods=['POST'])
 def generate_copy_list():
