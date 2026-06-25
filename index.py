@@ -218,9 +218,18 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             <form id="main-form" action="/generate" method="post" class="space-y-6">
                 <input type="hidden" id="students-json" name="students_json" value="">
                 
-                <div>
-                    <label class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block">考試名稱</label>
-                    <input type="text" name="exam_name" placeholder="例如：國三 金安模擬考 第一回" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block">考試種類</label>
+                        <select id="exam_type" name="exam_type" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-300 cursor-pointer">
+                            <option value="mock" selected class="bg-slate-950 text-slate-200">模擬考</option>
+                            <option value="paper_a" class="bg-slate-950 text-slate-200">A卷</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-2 block">考試名稱</label>
+                        <input type="text" name="exam_name" placeholder="例如：國三 金安模擬考 第一回" class="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -491,5 +500,3 @@ def generate_copy_list():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
